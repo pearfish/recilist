@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+  <title>Recilist API Test</title>
+</head>
+
+
+<body>
+
+<script>
+  function searchRecipe() {
+    var txtbox=document.getElementById("recQuery");
+    var query=txtbox.value;
+    var results="Homemade cookies, Chocolate Chip cookies"; /*will get this from API*/
+    document.getElementById("searchResults").innerHTML=results;
+  }
+  
+  function getIngr() {
+    var txtbox=document.getElementById("ingrQuery");
+    var query=txtbox.value;
+    var results="a cup of cinnamon, worms and plastic minnows"; /*will get this from API*/
+    document.getElementById("ingrResults").innerHTML=results;
+  }
+</script>
+
+
+  <h2>sup</h2>
+  
+  <input type="text" name="recQuery" id="recQuery" />
+  <button type="button" onclick="searchRecipe()"> Search Recipe</button>
+  <p id="searchResults">Results go here</p>
+  
+  <input type="text" name="ingrQuery" id="ingrQuery" />
+  <button type="button" onclick="getIngr()">look up ingredients</button>
+  <p id="ingrResults">Ingredients go here</p>
+  
+
+
+</body>
+
+
+
+
+
+</html>
