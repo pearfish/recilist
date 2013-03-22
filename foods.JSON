@@ -1,0 +1,24 @@
+{
+    "foods": {
+        "id": "0001",
+        "name": "Cookies",
+        "ingrs": [
+            {
+                "ingName": "flour",
+                "amount": "1 cup"
+            },
+            {
+                "ingName": "sugar",
+                "amount": "1.5 cup"
+            },
+            {
+                "ingName": "cinnamon",
+                "amount": "2 tsp"
+            },
+            {
+                "ingName": "worms and plastic minnows",
+                "amount": "yup yup yup"
+            }
+        ]
+    }
+}

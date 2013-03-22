@@ -4,9 +4,179 @@
 <head>
 
 <body>
-  <h1> welcome to recilist version 0.0 </h1>
-  <p> </p>
-  <a href="apitest.html">test file for api</a>
+  
+
+
+  <script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+  <script src="scripts/underscore-min.js" type="text/javascript"></script>
+  <script src="scripts/backbone-min.js"></script>
+
+  
+  <!-- templates -->
+  
+  <script type="text/template" id="search_template">
+    <label><%= search_label %></label>
+    <input type="text" id="search_input" />
+    <input type="button" id="search_button" value="Search" />
+  </script>
+  
+  <script type="text/template" id="search_results_template">
+    <label>Result</label>
+    <p id="search_result" />
+  </script>  
+  
+  <script type="text/template" id="ingr_template">
+    <label>Ingredient</label>
+    <p></p>
+    <p></p>
+  </script>
+  
+  <script type="text/template" id="recipe_template">
+    <label><%= recipe_label %></label>
+    <ul id="ingr_list">
+      <li> recipe ingredients should (eventually) be appended to this list </li>
+    </ul>
+  </script>
+  
+  <!-- /templates -->
+  
+  
+  
+  
+  
+  <!-- the actual body -->
+  <div class="container">
+    <h1>Recilist version 0.2</h1>
+    <hr />
+    <div class="page"></div>
+  </div>
+  
+  <h3> Welcome! </h3>
+  <div id="search_container"></div>
+   
+  <input type="button"  value="add test ingredient" onclick="addIngredient()"/> 
+  
+  
+  <div id="ingr_container"></div>
+    
+  <div id="recilist1">
+    <p> a recipe list should go right about here </p>
+  </div>
+
+  <a href="apitest.html">test page for api (this is obsolete) </a> 
+  
+  <!-- /actual body-->  
+    
+  
+  
+  
+    
+  <script type="text/javascript">
+    
+    /* imitation search button, kind of obsolete */
+    SearchView = Backbone.View.extend({
+      initialize: function(){
+        this.render();
+      },
+      render: function(){
+        var variables = { search_label: "Search bar goes here ->  " };
+        var template = _.template( $("#search_template").html(), variables );
+        this.$el.html( template );
+      },
+      events: {
+        "click input[type=button]": "doSearch"
+        /* eventually, this should send a recipe search request to the API,
+         * then generate a bunch of little views for the search resulsts
+         * (and also hide the SearchView in the process),
+         * each of which would have an onclick function that would generate the
+         * Recipe collection and view for the clicked result.  */
+      },
+      doSearch: function( event ){
+        alert( "Search for " + $("#search_input").val() );
+      }
+    });
+    
+    
+    /* model for the individual ingredients */
+    var Ingr = Backbone.Model.extend({
+      defaults: {
+        name: 'ingredient name not specified',
+        amount: 'amount not specified'
+      },
+      initialize: function() {
+        console.log("new ingredient made");
+      }
+    });
+    
+    /* the view for the ingredients */
+    IngrView = Backbone.View.extend({
+      initialize: function() {
+        this.render();
+      },
+      /*events: {
+      * add a onclick effect that switches the ingredient to 'checked' mode,
+      * also probably would need a counter to tell when all ingredients are checked
+      }, */ 
+      render: function(){
+        /*var variables = { an_ingr:  "cheese", an_amount: "5 gal" }; //this doesnt work */
+        var template = _.template( $("#ingr_container").html(), {} );
+        this.$el.html( template );
+      }
+    });
+    
+     
+    /*this is where things start getting freaky*/
+    
+    var Recipe = Backbone.Collection.extend({
+      url: '/foods.JSON', /*  '/foods.json?uu',  instead?  */
+      model: Ingr,
+      initialize: function() {
+        this.render();
+      },
+      
+      parse:function(res){                    
+        return res.items;
+      },
+      
+      populate:function(){
+        this.fetch();
+      }
+    });
+    
+    RecipeView = Backbone.View.extend({
+      el: '#recilist1',
+      initialize: function() {
+        this.render();
+      },
+      render: function(){
+        var variables = { recipe_label: "*recipe name*" };
+        var template = _.template( $("#recipe_template").html(), variables );
+        this.$el.html( template );
+      },
+      addOne: function(model) {
+        var view = new IngrView({model: Ingr});
+        /*view.render();
+        $(this.el).append(view.el);*/
+        this.$el.html( this.template );
+      }
+    });
+    
+    
+    var search_view = new SearchView({ el: $("#search_container") });
+    var myRecipeView = new RecipeView();
+    console.log("search, recipe views generated");
+  
+    function addIngredient(){
+      /*var ingr_view = new IngrView({ el: $("#ingr_container") });*/
+      
+      var ingr1= new Ingr();
+      myRecipeView.addOne(ingr1);
+      console.log("addIngredient() ran");
+    }
+    
+    
+  </script>
+  
 </body>
 
 </html>
