@@ -1,12 +1,112 @@
 <!DOCTYPE html>
 <head>
   <title> Recilist </title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <script src="scripts/jquery-1.9.1.min.js"></script>
+  <script src="scripts/underscore-min.js"></script>
+  <script src="scripts/backbone-min.js"></script>
 <head>
 
 <body>
   <h1> welcome to recilist version 0.0 </h1>
   <p> </p>
-  <a href="apitest.html">test file for api</a>
+  <div id="mainbox"></div>
 </body>
+
+<!-- templates -->
+  
+  
+<!--this is a template for the collection of recipes grabbed by the GET -->
+<script type="text/template" id="recipe_group_template">
+  <label>Search Results</label>
+  <input type="text" id="search_input" />
+  <input type="button" id="search_button" value="Search" />
+  <p> above button currently useless </p>
+  <div id="recipeList"><p>this is where the group of recipes will go</p></div>
+</script>
+
+
+<!--this is a template for the individual recipes grabbed by the GET -->
+<script type="text/template" id="recipe_template">
+  <div> //should this get an id?  that would be too redundant, right? can a dynamically named ID be thrown in here?  should be given a class at least, once the css is started with
+    <label><%= recipe_name %></label>
+    <input type="checkbox"><%= ingr_name %> 
+  </div>
+</script>
+
+<!-- /templates -->
+
+
+
+
+
+<script>
+  
+  /*The base url for the Search Recipes GET is
+   *http://api.yummly.com/v1/api/recipes?_app_id=app-id&_app_key=
+   app-key&your _search_parameters */
+  
+  /* ID- d8087d51  */
+  
+  /* KEY-  005af5a16f1a8abf63660c2c784ab65f  */
+  
+  // QUERY-   http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&q=onion%20soup
+  
+  var Recipe = Backbone.Model.extend({
+    defaults: {
+    },
+    initialize: function(){
+      /* store all ingredients */
+      console.log("new recipe model instantiated");
+    }
+  });
+  
+  var RecipeGroup = Backbone.Collection.extend({
+    model: Recipe,
+    url: "http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&q=onion%20soup",
+    // ^ onion soup recipe query...I think ^
+    
+    
+    defaults: {
+    },
+    initialize: function(){
+      /* for each recipe: make a new recipe model, pass it ingredient data */
+      this.fetch({});
+      /* PROBLEMA AQUI!!
+       * XMLHttpRequest cannot load (query), origin http://web.njit.edu is not allowed by Access-Control-Allow-Origin. 
+       * time to call Ziv
+       */
+      
+      
+      /* possible 'for each' technique-
+      var a = ["a", "b", "c"];
+        a.forEach(function(entry) {
+        console.log(entry);
+      });
+       */
+      
+      console.log("new recipe collection instantiated"); 
+      console.log(this.models); 
+    }  
+  });
+  
+  //view for the collection
+  RecipeGroupView = Backbone.View.extend({
+    initialize: function(){
+      this.render();
+    },
+    render: function(){
+      // var variables = { };
+      var template = _.template( $("#search_template").html(), variables );
+      this.$el.html( template );
+    }
+  });
+  
+  var ohShit = new RecipeGroup({});
+  console.log(ohShit.models);
+</script>
+
+
+
 
 </html>
