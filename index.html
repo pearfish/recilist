@@ -1,112 +1,89 @@
 <!DOCTYPE html>
-<head>
-  <title> Recilist </title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <script src="scripts/jquery-1.9.1.min.js"></script>
-  <script src="scripts/underscore-min.js"></script>
-  <script src="scripts/backbone-min.js"></script>
-<head>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Recilist Todos</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
 
-<body>
-  <h1> welcome to recilist version 0.0 </h1>
-  <p> </p>
-  <div id="mainbox"></div>
-</body>
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-<!-- templates -->
-  
-  
-<!--this is a template for the collection of recipes grabbed by the GET -->
-<script type="text/template" id="recipe_group_template">
-  <label>Search Results</label>
-  <input type="text" id="search_input" />
-  <input type="button" id="search_button" value="Search" />
-  <p> above button currently useless </p>
-  <div id="recipeList"><p>this is where the group of recipes will go</p></div>
-</script>
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/todos.css">    
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
 
+        <div id="todoapp">
 
-<!--this is a template for the individual recipes grabbed by the GET -->
-<script type="text/template" id="recipe_template">
-  <div> //should this get an id?  that would be too redundant, right? can a dynamically named ID be thrown in here?  should be given a class at least, once the css is started with
-    <label><%= recipe_name %></label>
-    <input type="checkbox"><%= ingr_name %> 
-  </div>
-</script>
+            <header>
+                <h1>Todos</h1>
+                <input id="new-todo" type="text" placeholder="What needs to be done?">
+            </header>
 
-<!-- /templates -->
+            <section id="main">
+                <input id="toggle-all" type="checkbox">
+                <label for="toggle-all">Mark all as complete</label>
+                <ul id="todo-list"></ul>
+            </section>
 
+            <footer>
+                <a id="clear-completed">Clear completed</a>
+                <div id="todo-count"></div>
+            </footer>
 
+        </div> <!-- /todoapp -->
 
+        <div id="instructions">
+            Double-click to edit a todo.
+        </div>
 
+        <!-- Templates -->
 
-<script>
-  
-  /*The base url for the Search Recipes GET is
-   *http://api.yummly.com/v1/api/recipes?_app_id=app-id&_app_key=
-   app-key&your _search_parameters */
-  
-  /* ID- d8087d51  */
-  
-  /* KEY-  005af5a16f1a8abf63660c2c784ab65f  */
-  
-  // QUERY-   http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&q=onion%20soup
-  
-  var Recipe = Backbone.Model.extend({
-    defaults: {
-    },
-    initialize: function(){
-      /* store all ingredients */
-      console.log("new recipe model instantiated");
-    }
-  });
-  
-  var RecipeGroup = Backbone.Collection.extend({
-    model: Recipe,
-    url: "http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&q=onion%20soup",
-    // ^ onion soup recipe query...I think ^
-    
-    
-    defaults: {
-    },
-    initialize: function(){
-      /* for each recipe: make a new recipe model, pass it ingredient data */
-      this.fetch({});
-      /* PROBLEMA AQUI!!
-       * XMLHttpRequest cannot load (query), origin http://web.njit.edu is not allowed by Access-Control-Allow-Origin. 
-       * time to call Ziv
-       */
-      
-      
-      /* possible 'for each' technique-
-      var a = ["a", "b", "c"];
-        a.forEach(function(entry) {
-        console.log(entry);
-      });
-       */
-      
-      console.log("new recipe collection instantiated"); 
-      console.log(this.models); 
-    }  
-  });
-  
-  //view for the collection
-  RecipeGroupView = Backbone.View.extend({
-    initialize: function(){
-      this.render();
-    },
-    render: function(){
-      // var variables = { };
-      var template = _.template( $("#search_template").html(), variables );
-      this.$el.html( template );
-    }
-  });
-  
-  var ohShit = new RecipeGroup({});
-  console.log(ohShit.models);
-</script>
+        <script type="text/template" id="item-template">
+            <div class="view">
+                <input class="toggle" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
+                <label><%- title %></label>
+                <a class="destroy"></a>
+            </div>
+            <input class="edit" type="text" value="<%- title %>" />
+        </script>
 
-
-
-
+        <script type="text/template" id="stats-template">
+            <% if (done) { %>
+            <a id="clear-completed">Clear <%= done %> completed <%= done == 1 ? 'item' : 'items' %></a>
+            <% } %>
+            <div class="todo-count"><b><%= remaining %></b> <%= remaining == 1 ? 'item' : 'items' %> left</div>
+        </script>
+        
+        
+        
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+        <script src="js/json2.js"></script>
+        <script src="js/underscore.js"></script>
+        <script src="js/backbone.js"></script>
+        <script src="js/backbone.localStorage.js"></script>
+        <script src="js/todos.js"></script>
+        
+        
+        
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <script>
+            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src='//www.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script>
+    </body>
 </html>
