@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html class="ui-mobile-rendering">
+<head>
+    <title>RECILIST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/jquery.mobile-1.0.1.min.css"/>
+
+    <!-- The Templates -->
+    <script type="text/template" id="home">
+
+        <div data-role="header">
+            <h1>Recilist Home</h1>
+        </div>
+
+        <div data-role="content">
+            <h3>recilist home page</h3>
+           
+            <p>This is the Home page. It was created dynamically using an underscore.js template.</p>
+            <p>Navigate to:</p>
+            <ul data-role="listview"  data-inset="true">
+                <li><a href="#newSearch">Search for new Recipes</a></li>
+                <li><a href="#savedRecipes">View saved Recipes</a></li>
+            </ul>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="newSearch">
+
+        <div data-role="header">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <h1>Search for a new Recipe</h1>
+        </div>
+
+        <div data-role="content">
+            <p>SEARCH BAR: _____onion_____</p>
+            <p>these are the search results!  they all go to the same dummy page</p>
+            <ul data-role="listview" data-inset="true">
+                <li><a href="#newList">Onion Soup</a></li>
+                <li><a href="#newList">Onion Sandwich</a></li>
+                <li><a href="#newList">Onion Salad</a></li>
+                <li><a href="#newList">Onions</a></li>
+                <li><a href="#newList">More onions</a></li>
+            </ul>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="newList">
+
+        <div data-role="header">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <h1>---NAME OF THE RECIPE----</h1>
+        </div>
+
+        <div data-role="content">
+            <p>This is a list of all the ingredients in this recipe</p>
+            <p>Ingredients:</p>
+            <ul data-role="listview" data-inset="true">
+                <li>onions</li>
+                <li>more onions</li>
+                <li>leeks</li>
+                <li>you get the joke</li>
+            </ul>
+            <p> (button to save this recipe to local storage) </p>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="savedRecipes">
+
+        <div data-role="header">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <h1>YOUR RECIPES</h1>
+        </div>
+
+        <div data-role="content">
+            <p>list of saved recipes, retrieved from local storage</p>
+            <p>Ingredients:</p>
+            <ul data-role="listview" data-inset="true">
+                <li><a href="#oldList">saved recipe 1</a></li>
+                <li><a href="#oldList">saved recipe 2</a></li>
+                <li><a href="#oldList">saved recipe 3</a></li>
+            </ul>
+        </div>
+
+    </script>
+    
+    
+    <script type="text/template" id="oldList">
+
+        <div data-role="header">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <h1>---NAME OF THE RECIPE----</h1>
+        </div>
+
+        <div data-role="content">
+            <p>This is a list of all the ingredients in this recipe</p>
+            <p>Ingredients:</p>
+            <ul data-role="listview" data-inset="true">
+                <li>ingredient 1</li>
+                <li>ingredient 2</li>
+                <li>ingredient 3</li>
+                <li>ingredient 4</li>
+            </ul>
+            <p> (button to view the recipe) </p>
+        </div>
+
+    </script>
+    
+    <!-- The Scripts -->
+    <script src="lib/jquery-1.7.1.min.js"></script>
+    <script src="js/jqm-config.js"></script>
+    <script src="lib/jquery.mobile-1.0.1.min.js"></script>
+    <script src="lib/underscore-min.js"></script>
+    <script src="lib/backbone-min.js"></script>
+    <script src="js/main.js"></script>
+</head>
+
+<body></body>
+
+</html>
