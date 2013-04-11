@@ -1,17 +1,31 @@
-
- var Todo = Backbone.Model.extend({
+var Todo = Backbone.Model.extend({
 
     // Default attributes for the todo item.
     defaults: function(name) {
       return {
         title: name,
         order: Todos.nextOrder(),
-        done: false
+        done: false  //again, not sure if 'done is needed'
+	
+	//include an array- probably have two attributes-
+	//first is name, second is a binary indicating "done-ness"
+	
+	//just a heads up- when this is implemented, if theres more
+	//than one attribute (if you include done-ness), then the
+	//findRecipes function will need to be changed to iterate through
+	//the ingr array from API and manually save ingrs[i]=(ingredient, 0), unfinished by default at init
+      
+	//also needs the link to the recipe instructions-
+	//dont forget to add this to findRecipes
       };
-    },
+    },		
 
+    initialize: function() {
+	console.log("new model made: "+ this.title); //this init is just here for logging purposes
+    },				//also, 'this.title' is not working
     
     // Toggle the `done` state of this todo item.
+    // I dont think this is needed, only ingredients need 'done status'
     toggle: function() {
       this.save({done: !this.get("done")}); 
     }
@@ -19,14 +33,13 @@
 });
 
 var TodoList = Backbone.Collection.extend({
-
     model: Todo,
-
     //!
     //!!!!
     //!!!!!!!
     //!!!!!!!!!!!
     // local storage is broken atm, will return later
+
     // localStorage: new Backbone.LocalStorage("todos-backbone"),
     
     done: function() {
@@ -62,10 +75,6 @@ var TodoList = Backbone.Collection.extend({
 		var tempIngrArray = new Array();
 		tempIngrArray = result[i].ingredients;
 		tempRecipeName = result[i].recipeName;
-		/*
-		$.each(temp, function(j, items) {
-		  console.log(temp[j]);
-		});*/
 		
                 console.log(tempRecipeName);
 		console.log(tempIngrArray); //only logs one ingr for now, too lazy
@@ -84,39 +93,6 @@ var TodoList = Backbone.Collection.extend({
 //I am afraid to move this
 var Todos = new TodoList;
 
-
-/*
- *  this view will be for the search results
- *  will be generated for each search result...obviously
- *  main distinuishing factor - will have an onlick event that will display all the ingredients
- *  AND will have a button that saves the recipe to the local storage
-
-var newSearchView = Backbone.View.extend({
-    tagName:"li",
-    template: _.template($('#_______').html()),
-    
-    events: {
-	"click : "showIngr",
-    },
-    
-    initialize: function() {
-	//!!
-    },
-    
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-      this.$el.toggleClass('done', this.model.get('done'));
-    //  this.input = this.$('.edit');
-      return this;
-    },
-    
-});
-
-*
-*
-*
-*
-*/
 
 var TodoView = Backbone.View.extend({
 
@@ -137,6 +113,9 @@ var TodoView = Backbone.View.extend({
     // The TodoView listens for changes to its model, re-rendering. Since there's
     // a one-to-one correspondence between a **Todo** and a **TodoView** in this
     // app, we set a direct reference on the model for convenience.
+    
+    //do we really care about this?  it cant be changed unless you switch to a differnt
+    //page, and it will re-render  when you change back
     initialize: function() {
       this.listenTo(this.model, 'change', this.render);
       this.listenTo(this.model, 'destroy', this.remove);
@@ -189,7 +168,6 @@ var TodoView = Backbone.View.extend({
 
 
 window.HomeView = Backbone.View.extend({
-
     template:_.template($('#home').html()),
 
     render:function (eventName) {
@@ -199,7 +177,6 @@ window.HomeView = Backbone.View.extend({
 });
 
 window.newSearchView = Backbone.View.extend({
-
     template:_.template($('#newSearch').html()),
     
     events: {
@@ -213,32 +190,39 @@ window.newSearchView = Backbone.View.extend({
         return this;
     },
     
-    searchOnEnter: function(e) {   //this will become the search bar
+    searchOnEnter: function(e) {   //the search bar's functionality
       if (e.keyCode != 13) return;
       var searchin = $("input[name='recipe-search']").val();
       
       console.log(searchin);
+      //this function is in the collection, does an API call and
+      //adds a new model for each result (which will ~ always be 5)
       searchTemp.findRecipes(searchin);
-      
-     
     }
+    //now needs to generate a list for every item in tempSearchCollection( not the real name)
+    
+    //each one of those will have an onlick event that will
+    //route to newListView, which will display all the ingredients
 });
 
 window.newListView = Backbone.View.extend({
-
     template:_.template($('#newList').html()),
 
     render:function (eventName) {
         $(this.el).html(this.template());
         return this;
     }
+    
+    //needs a button (or functionality for it, rather
+    //that saves this recipe to the permanant collection,
+    //which will be saved in local storage
 });
 
 window.savedRecipesView = Backbone.View.extend({
-
     template:_.template($('#savedRecipes').html()),
-
-    //it should fetch all recipes from local storage and put them here
+    //this should fetch all recipes from permanent collection
+    //(local storage) and display them here - maybe assist this with
+    //a 'return all' function in permStorage?
     
     render:function (eventName) {
         $(this.el).html(this.template());
@@ -247,7 +231,11 @@ window.savedRecipesView = Backbone.View.extend({
 });
 
 window.oldListView = Backbone.View.extend({
-    
+    //very similar to newListView, only difference is that
+    //well first obviously it will be reached through #savedRecipes
+    //and second, instead of having a "save" button at the bottom,
+    //it will have a "show instructions" button that will
+    //follow a link to the recipe instructions provided by API
     template:_.template($('#oldList').html()), 
     
     render: function (eventName) {
