@@ -26,23 +26,23 @@
     </script>
 
     <script type="text/template" id="newSearch">
-
+    
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <h1>Search for a new Recipe</h1>
         </div>
 
         <div data-role="content">
-            <p>SEARCH BAR: _____onion_____</p>
-            <p>these are the search results!  they all go to the same dummy page</p>
-            <ul data-role="listview" data-inset="true">
-                <li><a href="#newList">Onion Soup</a></li>
-                <li><a href="#newList">Onion Sandwich</a></li>
-                <li><a href="#newList">Onion Salad</a></li>
-                <li><a href="#newList">Onions</a></li>
-                <li><a href="#newList">More onions</a></li>
+            <input name= "recipe-search" id="recipe-search" type="text" placeholder="What do you want to cook?">
+            
+            
+            <p>search results should be appended to the end of a list here</p>
+            <ul id="search-list" data-role="listview" data-inset="true">
+               
             </ul>
         </div>
+    </div>
+    
 
     </script>
 
@@ -76,14 +76,33 @@
 
         <div data-role="content">
             <p>list of saved recipes, retrieved from local storage</p>
-            <p>Ingredients:</p>
+            <p>Saved Recipes:</p>
             <ul data-role="listview" data-inset="true">
                 <li><a href="#oldList">saved recipe 1</a></li>
                 <li><a href="#oldList">saved recipe 2</a></li>
                 <li><a href="#oldList">saved recipe 3</a></li>
             </ul>
+           <a href="#deleteOld" data-role="button">manage saved recipes</a>
+            
+        </div>
+    </script>
+    
+    <script type="text/template" id="deleteOld">
+
+        <div data-role="header">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <h1>Delete Recipes</h1>
         </div>
 
+        <div data-role="content">
+            <p>select which recipes you wish to delete from local storage</p>
+            <p>recipes:</p>
+            <p>(currently lacks functionality to populate this list)</p>
+            <ul data-role="listview" data-inset="true" id="recipe-list">
+
+            </ul>
+            <input type="submit" value="delete selected" />
+        </div>
     </script>
     
     
@@ -115,6 +134,8 @@
     <script src="lib/underscore-min.js"></script>
     <script src="lib/backbone-min.js"></script>
     <script src="js/main.js"></script>
+    <script src="../js/backbone.localStorage.js"</script>
+    <script src="../js/json2.js"></script>
 </head>
 
 <body></body>
