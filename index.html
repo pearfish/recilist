@@ -1,92 +1,155 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Recilist Todos</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
+<html class="ui-mobile-rendering">
+<head>
+    <title>RECILIST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/jquery.mobile-1.0.1.min.css"/>
 
-        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- The Templates -->
+    <script type="text/template" id="home">  
+        <div data-role="header">
+            <h1>Recilist Home</h1>
+        </div>
 
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/main.css">
-        <link rel="stylesheet" href="css/todos.css">
+        <div data-role="content">
+            <h3>recilist home page</h3>
+            <p>Welcome to Recilist!</p>
+            <p>This is the Home page. </p>
+            
+            <p>Navigate to:</p>
+            <ul data-role="listview"  data-inset="true">
+                <li><a href="#newSearch">Search for new Recipes</a></li>
+                <li><a href="#savedRecipes">View saved Recipes</a></li>
+            </ul>
+            
+            <p>alternate way to display the navigation:</p>
+            <a href="#newSearch" data-role="button" data-icon="arrow-r">Search for new Recipes</a>
+            <a href="#savedRecipes" data-role="button" data-icon="arrow-r">View saved Recipes</a>
+        </div>
         
-        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
-        
+        <div data-role="footer" class="ui-bar">
+        </div>
+    </script>
 
+    <script type="text/template" id="newSearch">  
+        <div data-role="header">
+            <h1>Search for a new Recipe</h1> 
+        </div>
+
+        <div data-role="content">
+            <input name= "recipe-search" id="recipe-search" data-icon="search" type="text" placeholder="What do you want to cook?">
+            <ul id="search-list" data-role="listview" data-inset="true">
+               
+            </ul>
+        </div>
+    
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <a href="#" data-icon="home">Home</a>
+        </div>
+    </script>
         
-    </head>
+    <script type="text/template" id="newList">
+        <div data-role="header">
+            <h1>recipe name goes here...eventually</h1>
+        </div>
+
+        <div data-role="content">
+            <p>Ingredients:</p>
+            <ul id="ingr-list" data-role="listview" data-inset="true">
+
+            </ul>
+            <input type="button" id="save-this" data-icon="check">
+        </div>
+        
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <a href="#" data-icon="home">Home</a>
+        </div>
+    </script>
+
+    <script type="text/template" id="savedRecipes">
+        <div data-role="header">
+            <h1>YOUR RECIPES</h1>
+        </div>
+
+        <div data-role="content">
+            <p>list of saved recipes, retrieved from local storage</p>
+            <p>Saved Recipes:</p>
+            <ul data-role="listview" data-inset="true">
+                <li><a href="#oldList">saved recipe 1</a></li>
+                <li><a href="#oldList">saved recipe 2</a></li>
+                <li><a href="#oldList">saved recipe 3</a></li>
+            </ul>
+           <a href="#deleteOld" data-role="button">manage saved recipes</a>
+        </div>
+        
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <a href="#" data-icon="home">Home</a>
+        </div>
+    </script>
+    
+    <script type="text/template" id="deleteOld">
+        <div data-role="header">
+            <h1>Delete Recipes</h1>
+        </div>
+
+        <div data-role="content">
+            <p>select which recipes you wish to delete from local storage</p>
+            <p>recipes:</p>
+            <p>(currently lacks functionality to populate this list)</p>
+            <ul data-role="listview" data-inset="true" id="recipe-list">
+
+            </ul>
+            <input type="button" data-icon="delete" value="delete selected" />
+        </div>
+        
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <a href="#" data-icon="home">Home</a>
+        </div>
+    </script>
     
     
-    <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
-        <![endif]-->
+    <script type="text/template" id="oldList">
+        <div data-role="header">
+            <h1>---NAME OF THE RECIPE----</h1> 
+        </div>
+
+        <div data-role="content">
+            <p>This is a list of all the ingredients in this recipe</p>
+            <p>Ingredients:</p>
+            <ul data-role="listview" data-inset="true">
+                <li>ingredient 1</li>
+                <li>ingredient 2</li>
+                <li>ingredient 3</li>
+                <li>ingredient 4</li>
+            </ul>
+            <p> (button to view the recipe) </p>
+        </div>
         
-        <div id="todoapp">
+        <div data-role="footer" class="ui-bar">
+            <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+            <a href="#" data-icon="home">Home</a>
+        </div>
+    </script>
+    
+    
 
-            <header>
-                <h1>Todos</h1>
-                <input id="new-todo" type="text" placeholder="What needs to be done?">
-            </header>
+    
+    
+    <!-- The Scripts -->
+    <script src="lib/jquery-1.7.1.min.js"></script>
+    <script src="js/jqm-config.js"></script>
+    <script src="lib/jquery.mobile-1.0.1.min.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="lib/backbone-min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/backbone.localStorage.js"</script>
+    <script src="js/json2.js"></script>
+</head>
 
-            <section id="main">
-                <input id="toggle-all" type="checkbox">
-                <label for="toggle-all">Mark all as complete</label>
-                <ul id="todo-list"></ul>
-            </section>
+<body></body>
 
-            <footer>
-                <a id="clear-completed">Clear completed</a>
-                <div id="todo-count"></div>
-            </footer>
-
-        </div> <!-- /todoapp -->
-
-
-        <!-- Templates -->
-
-        <script type="text/template" id="item-template">
-            <div class="view">
-                <input class="toggle" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
-                <label><%- title %></label>
-                <a class="destroy"></a>
-            </div>
-            <input class="edit" type="text" value="<%- title %>" />
-        </script>
-
-        <script type="text/template" id="stats-template">
-            <% if (done) { %>
-            <a id="clear-completed">Clear <%= done %> completed <%= done == 1 ? 'item' : 'items' %></a>
-            <% } %>
-            <div class="todo-count"><b><%= remaining %></b> <%= remaining == 1 ? 'item' : 'items' %> left</div>
-        </script>
-        
-        
-        
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
-        <script src="js/plugins.js"></script>
-    <!--    <script src="js/main.js"></script>  -->
-        <script src="js/json2.js"></script>
-        <script src="js/underscore.js"></script>
-        <script src="js/backbone.js"></script>
-        <script src="js/backbone.localStorage.js"></script>
-        <script src="js/todos.js"></script>
-
-        
-        
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src='//www.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
-        </script>
-    </body>
 </html>
