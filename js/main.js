@@ -4,7 +4,9 @@ var Todo = Backbone.Model.extend({
 	id: 0,
 	title: 'defaultname',
 	rid: 'defaultrecipeID',
+	imgUrl: 'defaultimageurl',
         order: Todos.nextOrder(),
+	
         done: false  //should remove this, 'done-ness' isn't needed on the model level, just on the ingredient level
 
         /* things to add to model -
@@ -41,7 +43,7 @@ var TodoList = Backbone.Collection.extend({
   
   onModelAdded: function(model, collection, options) {
     //this does the appending to the search list, called in findRecipes()
-    $("#search-list").append("<li> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
+    $("#search-list").append("<li> <img src="+model.get("imgUrl")+"> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
   },
 
   done: function() {
@@ -80,8 +82,10 @@ var TodoList = Backbone.Collection.extend({
 	    id: "result "+(i+1),            //then sets the attributes
 	    title: result[i].recipeName,	
 	    ingrs: result[i].ingredients,
-	    rid: result[i].id			//(add more attributes here as needed)
+	    rid: result[i].id,
+	    imgUrl: result[i].smallImageUrls//(add more attributes here as needed)
 	  });
+	  
 	  
 	  searchTemp.add(anotherRecipe);    //adds the model to the temporary 
 	    
@@ -90,6 +94,9 @@ var TodoList = Backbone.Collection.extend({
 	});
       }  //eventually, should add something that checks for an empty search result, appending some warning if that happens
     });
+		
+	
+    
   }  
 });
 
