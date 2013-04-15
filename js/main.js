@@ -41,7 +41,7 @@ var TodoList = Backbone.Collection.extend({
   
   onModelAdded: function(model, collection, options) {
     //this does the appending to the search list, called in findRecipes()
-    $("#search-list").append("<li> <a href='#newList/"+model.get("id")+"'>" + model.get("title") + "</a> </li>");
+    $("#search-list").append("<li> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
   },
 
   done: function() {
@@ -207,14 +207,20 @@ window.newSearchView = Backbone.View.extend({
 window.newListView = Backbone.View.extend({
     template:_.template($('#newList').html()),
 
+    events: {
+      "click #save-this":  "saveModel"
+    },
+    
     render:function (eventName) {
 	$(this.el).html(this.template());
         return this;
-    }
+    },
     
-    //needs a button (or functionality for it, rather)
-    //that saves this recipe to the permanant collection,
-    //which will be saved in local storage
+    saveModel: function() {
+	console.log("saveModel() called");
+	
+	
+    }
 });
 
 window.savedRecipesView = Backbone.View.extend({
@@ -286,7 +292,7 @@ var AppRouter = Backbone.Router.extend({
 	
 	//appends each ingredient to page as a list element
 	$.each(theIngrs, function(i, item) { 
-	  $("#ingr-list").append("<li>" + theIngrs[i] + "</li></a><br>");  
+	  $("#ingr-list").append("<li data-role='listview' class='ui-li ui-li-static ui-btn-right-c'>" + theIngrs[i] + "</li>");  
 	}); 
 	
     },
@@ -320,4 +326,5 @@ $(document).ready(function () {
     app = new AppRouter();
     Backbone.history.start();
     searchTemp = new TodoList(); //this stores searched recipes
+    permStorage = new TodoList();
 });
