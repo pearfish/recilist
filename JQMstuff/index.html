@@ -7,7 +7,6 @@
 
     <!-- The Templates -->
     <script type="text/template" id="home">
-
         <div data-role="header">
             <h1>Recilist Home</h1>
         </div>
@@ -21,20 +20,22 @@
                 <li><a href="#newSearch">Search for new Recipes</a></li>
                 <li><a href="#savedRecipes">View saved Recipes</a></li>
             </ul>
+            
+            <p>alternate way to display the buttons</p>
+            <a href="#newSearch" data-role="button" data-icon="arrow-r">Search for new Recipes</a>
+            <a href="#savedRecipes" data-role="button" data-icon="arrow-r">View saved Recipes</a>
         </div>
-
     </script>
 
-    <script type="text/template" id="newSearch">
-    
+    <script type="text/template" id="newSearch">  
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <h1>Search for a new Recipe</h1>
+            <a href="#" data-icon="home">Home</a>
         </div>
 
         <div data-role="content">
-            <input name= "recipe-search" id="recipe-search" type="text" placeholder="What do you want to cook?">
-            
+            <input name= "recipe-search" id="recipe-search" data-icon="search" type="text" placeholder="What do you want to cook?">
             
             <p>search results should be appended to the end of a list here</p>
             <ul id="search-list" data-role="listview" data-inset="true">
@@ -42,36 +43,31 @@
             </ul>
         </div>
     </div>
-    
-
     </script>
-
+        
     <script type="text/template" id="newList">
-
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <h1>---NAME OF THE RECIPE----</h1>
+            <a href="#" data-icon="home">Home</a>
         </div>
 
         <div data-role="content">
             <p>This is a list of all the ingredients in this recipe</p>
             <p>Ingredients:</p>
-            <ul data-role="listview" data-inset="true">
-                <li>onions</li>
-                <li>more onions</li>
-                <li>leeks</li>
-                <li>you get the joke</li>
+            <ul id="ingr-list" data-role="listview" data-inset="true">
+
             </ul>
             <p> (button to save this recipe to local storage) </p>
+            <input type="button" data-icon="check">
         </div>
-
     </script>
 
     <script type="text/template" id="savedRecipes">
-
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <h1>YOUR RECIPES</h1>
+            <a href="#" data-icon="home">Home</a>
         </div>
 
         <div data-role="content">
@@ -88,10 +84,10 @@
     </script>
     
     <script type="text/template" id="deleteOld">
-
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <h1>Delete Recipes</h1>
+            <a href="#" data-icon="home">Home</a>
         </div>
 
         <div data-role="content">
@@ -101,16 +97,16 @@
             <ul data-role="listview" data-inset="true" id="recipe-list">
 
             </ul>
-            <input type="submit" value="delete selected" />
+            <input type="button" data-icon="delete" value="delete selected" />
         </div>
     </script>
     
     
     <script type="text/template" id="oldList">
-
         <div data-role="header">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
-            <h1>---NAME OF THE RECIPE----</h1>
+            <h1>---NAME OF THE RECIPE----</h1> 
+            <a href="#" data-icon="home">Home</a>
         </div>
 
         <div data-role="content">
@@ -124,14 +120,17 @@
             </ul>
             <p> (button to view the recipe) </p>
         </div>
-
     </script>
+    
+    
+
+    
     
     <!-- The Scripts -->
     <script src="lib/jquery-1.7.1.min.js"></script>
     <script src="js/jqm-config.js"></script>
     <script src="lib/jquery.mobile-1.0.1.min.js"></script>
-    <script src="lib/underscore-min.js"></script>
+    <script src="../js/underscore.js"></script>
     <script src="lib/backbone-min.js"></script>
     <script src="js/main.js"></script>
     <script src="../js/backbone.localStorage.js"</script>

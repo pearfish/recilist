@@ -1,14 +1,14 @@
 var Todo = Backbone.Model.extend({
-
-    // Default attributes for the todo item.
-    defaults: function(name) {
+    defaults: function() {
       return {
-        title: name,
+	id: 0,
+	title: 'defaultname',
+	rid: 'defaultrecipeID',
         order: Todos.nextOrder(),
-        done: false  //again, not sure if 'done is needed'
+        done: false  //'done-ness' isn't needed for the models
 	
-	//include an array- probably have two attributes-
-	//first is name, second is a binary indicating "done-ness"
+	//include an ingredient array- probably have two attributes-
+	//first is name, second is a binary indicating "done-ness" for each particular ingredient
 	
 	//just a heads up- when this is implemented, if theres more
 	//than one attribute (if you include done-ness), then the
@@ -19,80 +19,94 @@ var Todo = Backbone.Model.extend({
 	//dont forget to add this to findRecipes
       };
     },		
-
-    initialize: function() {
-	console.log("new model made: "+ this.title); //this init is just here for logging purposes
-    },				//also, 'this.title' is not working
-    
+    initialize: function(){
+      if( !this.get('ingrs') ){ 
+        this.set({ingrs: new Array()});
+      }
+    },
     // Toggle the `done` state of this todo item.
     // I dont think this is needed, only ingredients need 'done status'
     toggle: function() {
       this.save({done: !this.get("done")}); 
     }
-
 });
+
 
 var TodoList = Backbone.Collection.extend({
-    model: Todo,
-    //!
-    //!!!!
-    //!!!!!!!
-    //!!!!!!!!!!!
-    // local storage is broken atm, will return later
+  model: Todo,
 
-    // localStorage: new Backbone.LocalStorage("todos-backbone"),
-    
-    done: function() {
-      return this.where({done: true});
-    },
+  //			!!		 local storage is broken atm, will return later
 
-    // Filter down the list to only todo items that are still not finished.   
-    //   ?  is this needed ?
-    remaining: function() {
-      return this.without.apply(this, this.done());
-    },
-    nextOrder: function() {
-      if (!this.length) return 1;
-      return this.last().get('order') + 1;
-    },
-    comparator: 'order',
-    
-    
-    // here's the fun part: querying the API 
-    findRecipes: function(theQuery) {
-      var query = theQuery; //placeholder
-      console.log("findRecipes called");
-      $.ajax({
-	url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+query,
-	dataType: 'jsonp',
+  //localStorage: new Backbone.LocalStorage("recilist-backbone"),
+  //is it (the library) out of date maybe?
+  //see   http://stackoverflow.com/questions/10867467/backbone-local-storage-undefined-is-not-a-function
+  initialize: function() {
+    this.bind('add', this.onModelAdded, this );
+  },
+  
+  onModelAdded: function(model, collection, options) {
+    //console.log('Added:');
+    console.log(model);
+    //console.log(collection);
+    //console.log(options);
+    $("#search-list").append("<li> <a href='#newList/"+model.get("id")+"'>" + model.get("title") + "</a> </li>");
+  },
 
-	success: function(apiStuff){
-	    var result = new Array();     
-	    result = apiStuff;          //saves result as a new array
-	    result = result.matches;    //now the array only has all the results
-            
-	    $.each(result, function(i, item) {
-		var tempIngrArray = new Array();
-		tempIngrArray = result[i].ingredients;
-		tempRecipeName = result[i].recipeName;
-		
-                console.log(tempRecipeName);
-		console.log(tempIngrArray); //only logs one ingr for now, too lazy
-		/*
-		$.each(tempIngrArray,function(j, items) {
-		  console.log(tempIngrArray[j]);
-		});
-		*/
-		anotherRecipe= new Todo(tempRecipeName);	
-	    });
-	}  
-      });
-    }
+  done: function() {
+    return this.where({done: true});
+  },
+
+  // Filter down the list to only todo items that are still not finished.   
+  //   ?  is this needed ?
+  remaining: function() {
+    return this.without.apply(this, this.done());
+  },
+  nextOrder: function() {
+    if (!this.length) return 1;
+    return this.last().get('order') + 1;
+  },
+  comparator: 'order',
+  
+  findRecipes: function(theQuery) {
+    //should eventually add code to delete all models in searchTemp here
+    
+    console.log("findRecipes called");
+    $.ajax({
+      url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
+      dataType: 'jsonp',
+
+      success: function(apiStuff){
+	var result = new Array();     
+	result = apiStuff;          //saves the API's response as a new array
+	result = result.matches;    //trims extra information from the json object, now only has information on the various recipes
+	  
+	$.each(result, function(i, item) {
+	  var anotherRecipe= new Todo();// makes a new model for each result
+	  
+	  anotherRecipe.set({
+	    id: "result "+(i+1),
+	    title: result[i].recipeName,	//then sets the attributes
+	    ingrs: result[i].ingredients,
+	    rid: result[i].id			//(add more attributes here as needed)
+	  });
+	  
+	  //now console logging everything to make sure it works, need to make a array intermediate because just console.log(aModel.get("anArray")) looks ugly
+	  /*console.log("made model - " + anotherRecipe.get("title"));
+	  var logIngrs = new Array(); 
+	  logIngrs = anotherRecipe.get("ingrs");
+	  console.log(logIngrs);
+	  */
+	  searchTemp.add(anotherRecipe); 
+	    
+	  console.log("added, current state of searchTemp is-");
+	  console.log(searchTemp.models);    
+	});
+      }  //eventually, should add something that checks for an empty search result
+    });
+  }  
 });
 
-//I am afraid to move this
-var Todos = new TodoList;
-
+var Todos = new TodoList;	//I am afraid to move this
 
 var TodoView = Backbone.View.extend({
 
@@ -110,10 +124,6 @@ var TodoView = Backbone.View.extend({
       "blur .edit"      : "close"
     },
 
-    // The TodoView listens for changes to its model, re-rendering. Since there's
-    // a one-to-one correspondence between a **Todo** and a **TodoView** in this
-    // app, we set a direct reference on the model for convenience.
-    
     //do we really care about this?  it cant be changed unless you switch to a differnt
     //page, and it will re-render  when you change back
     initialize: function() {
@@ -130,17 +140,20 @@ var TodoView = Backbone.View.extend({
     },
 
     // Toggle the `"done"` state of the model.
+    //NOT NEEDED
     toggleDone: function() {
       this.model.toggle();
     },
 
     // Switch this view into `"editing"` mode, displaying the input field.
+    //---NOT NEEDED
     edit: function() {
       this.$el.addClass("editing");
       this.input.focus();
     },
 
     // Close the `"editing"` mode, saving changes to the todo.
+    //----NOT NEEDED
     close: function() {
       var value = this.input.val();
  
@@ -153,6 +166,8 @@ var TodoView = Backbone.View.extend({
     },
 
     // If you hit `enter`, we're through editing the item.
+    
+    //---NOT NEEDED
     updateOnEnter: function(e) {
       if (e.keyCode == 13) this.close();
     },
@@ -161,10 +176,7 @@ var TodoView = Backbone.View.extend({
     clear: function() {
       this.model.destroy();
     }
-
 });
-
-
 
 
 window.HomeView = Backbone.View.extend({
@@ -181,35 +193,46 @@ window.newSearchView = Backbone.View.extend({
     
     events: {
       "keypress #recipe-search":  "searchOnEnter",
-     /* "click #clear-completed": "clearCompleted",
-      "click #toggle-all": "toggleAllComplete"*/
+      //add a listener to newSearch to change what's displaye don this list
     },
     
     render:function (eventName) {
-        $(this.el).html(this.template());
-        return this;
+      //template:_.template($('#recipeListItem').html()),
+      $(this.el).html(this.template());
+      return this;
     },
     
     searchOnEnter: function(e) {   //the search bar's functionality
       if (e.keyCode != 13) return;
-      var searchin = $("input[name='recipe-search']").val();
+      var searchin = $("input[id='recipe-search']").val();
       
-      console.log(searchin);
+      console.log("searched for - "+ searchin);
       //this function is in the collection, does an API call and
-      //adds a new model for each result (which will ~ always be 5)
+      //adds a new model for each result (there will almost always be 5 results)
       searchTemp.findRecipes(searchin);
+    },
+
+    // Add a single todo item to the list by creating a view for it, and
+    // appending its element to the `<ul>`.
+    addOne: function(todo) {
+      var view = new recipeListItemView({model: todo});
+      // name='recipe-search'
+      this.$("#search-list").append(view.render().el);
+    },
+
+    // Add all items in the **Todos** collection at once.
+    addAll: function() {
+      Todos.each(this.addOne, this);
     }
-    //now needs to generate a list for every item in tempSearchCollection( not the real name)
-    
-    //each one of those will have an onlick event that will
-    //route to newListView, which will display all the ingredients
 });
+
+
 
 window.newListView = Backbone.View.extend({
     template:_.template($('#newList').html()),
 
     render:function (eventName) {
-        $(this.el).html(this.template());
+	$(this.el).html(this.template());
         return this;
     }
     
@@ -255,16 +278,14 @@ window.deleteOldView =  Backbone.View.extend({
 }); 
     
 var AppRouter = Backbone.Router.extend({
-
     routes:{
         "":"home",
         "newSearch":"newSearch",
-        "newList":"newList",
+        "newList/:id":"newList",
         "savedRecipes":"savedRecipes",
         "oldList":"oldList",
 	"deleteOld":"deleteOld"
     },
-
     initialize:function () {
         // Handle back button throughout the application
         $('.back').live('click', function(event) {
@@ -273,34 +294,33 @@ var AppRouter = Backbone.Router.extend({
         });
         this.firstPage = true;
     },
-
     home:function () {
-        console.log('#home');
         this.changePage(new HomeView());
     },
-
     newSearch:function () {
-        console.log('#newSearch');
         this.changePage(new newSearchView());
     },
-
-    newList:function () {
-        console.log('#newList');
+    newList:function (id) {
         this.changePage(new newListView());
-    },
+	console.log("now going to try to populate a list of recipes for "+id);
     
-    savedRecipes:function () {
-        console.log('#savedRecipes');    
+	var tempModel = searchTemp.get(id); //makes an instance of the model, using the ID to find it
+	var theIngrs = new Array();
+	var theIngrs = tempModel.get("ingrs"); //pulls the ingredients out of the model
+	
+	//appends each ingredient to page as a list element
+	$.each(theIngrs, function(i, item) { 
+	  $("#ingr-list").append("<li>" + theIngrs[i] + "</li></a><br>");  
+	}); 
+	
+    },
+    savedRecipes:function () {  
         this.changePage(new savedRecipesView());      
     },
-    
     oldList:function () {
-        console.log('#oldList');
         this.changePage(new oldListView());
     },
-    
     deleteOld:function () {
-        console.log('#deleteOld');
         this.changePage(new deleteOldView());
     },
 
@@ -318,9 +338,6 @@ var AppRouter = Backbone.Router.extend({
     }
 
 });
-
-
-
 
 $(document).ready(function () {
     console.log('document ready');

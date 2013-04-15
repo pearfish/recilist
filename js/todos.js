@@ -84,7 +84,11 @@ $(function(){
 		var temp = new Array();
 		temp = result[i].ingredients;
 		otherTemp = result[i].recipeName;
-		
+
+		/* log every ingredient, disabled b/c annoying
+		$.each(temp, function(j, items) {
+		  console.log(temp[j]);
+		});*/
                 console.log(otherTemp);
 		console.log(result[i].ingredients);
 	    });
@@ -244,8 +248,7 @@ $(function(){
       console.log(this.input.val());
       if (!this.input.val()) return;
       Todos.create({title: this.input.val()}); 
-      
-      ;  //calls findRecipes with query of what's in the search field
+      Todos.findRecipes(this.input.val());  //calls findRecipes with query of what's in the search field
       this.input.val('');  // this just clears the search field, nothing to do with recipe stuff
     },
 
