@@ -1,19 +1,24 @@
+//add a total ingredient view- like an overall shopping list
+
 var Todo = Backbone.Model.extend({
     defaults: function() {
       return {
 	id: 0,
 	title: 'defaultname',
-	rid: 'defaultrecipeID',
 	imgUrl: 'defaultimageurl',
-        order: Todos.nextOrder(),
-	
-        done: false  //should remove this, 'done-ness' isn't needed on the model level, just on the ingredient level
-
+        order: permStorage.nextOrder(),
+        rating: 0,
+        timeToMake: 0,
+        salty: 0,
+        sour: 0,
+        sweet: 0,
+        bitter: 0,	
+        taggedForList: false
+        //this was changed
         /* things to add to model -
-         * some logic to track 'done-ness' of individual recipes
+         * spiciness etc
          * the link to the recipe instructions
          */
-        
       };
     },		
     initialize: function(){
@@ -21,22 +26,15 @@ var Todo = Backbone.Model.extend({
         this.set({ingrs: new Array()});
       }
     },
-    // Toggle the `done` state of this todo item.
-    // **not needed**
+    //altered, now this indicates whether
     toggle: function() {
-      this.save({done: !this.get("done")}); 
+      this.save({taggedForList: !this.get("taggedForList")}); 
     }
 });
 
-
 var TodoList = Backbone.Collection.extend({
   model: Todo,
-
-  //			!!		 local storage is broken atm, will return later
-
-  //localStorage: new Backbone.LocalStorage("recilist-backbone"),
-  //is it (the library) out of date maybe?
-  //see   http://stackoverflow.com/questions/10867467/backbone-local-storage-undefined-is-not-a-function
+  //localStorage: new Backbone.LocalStorage("recilist-temp"),
   initialize: function() {
     this.bind('add', this.onModelAdded, this );
   },
@@ -45,17 +43,6 @@ var TodoList = Backbone.Collection.extend({
     //this does the appending to the search list, called in findRecipes()
     $("#search-list").append("<li> <img src="+model.get("imgUrl")+"> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
   },
-
-  done: function() {
-    //**not needed**
-    return this.where({done: true});
-  },
-
-  // Filter down the list to only todo items that are still not finished.   
-  //   **not needed**
-  remaining: function() {
-    return this.without.apply(this, this.done());
-  },
   nextOrder: function() {
     if (!this.length) return 1;
     return this.last().get('order') + 1;
@@ -63,9 +50,8 @@ var TodoList = Backbone.Collection.extend({
   comparator: 'order',
   
   findRecipes: function(theQuery) {
-    //should eventually add code to delete all models in searchTemp here (so list doesnt get huge if there's more than one search)
-    
     console.log("findRecipes called");
+    searchTemp.reset(); //deletes the any old search results, they're not needed
     $.ajax({
       url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
       dataType: 'jsonp',
@@ -79,29 +65,88 @@ var TodoList = Backbone.Collection.extend({
 	  var anotherRecipe= new Todo();    // makes a new model for each result
 	  
 	  anotherRecipe.set({
-	    id: "result "+(i+1),            //then sets the attributes
+	    id: result[i].id,            //then sets the attributes
 	    title: result[i].recipeName,	
 	    ingrs: result[i].ingredients,
-	    rid: result[i].id,
-	    imgUrl: result[i].smallImageUrls//(add more attributes here as needed)
-	  });
-	  
-	  
-	  searchTemp.add(anotherRecipe);    //adds the model to the temporary 
-	    
-	  console.log("added, current state of searchTemp is-");
-	  console.log(searchTemp.models);    
+	    imgUrl: result[i].smallImageUrls,
+            rating: result[i].rating,
+            timeToMake: result[i].totalTimeInSeconds,
+          });
+          //not all recipes support flavor ratings, so error catching must be used to avoid setting null values
+          try { anotherRecipe.set({ salty : result[i].flavors.salty }); } catch(e) {anotherRecipe.set({salty : "?"});}  //maybe replace the error condition to setting the flavor to '?'
+          try { anotherRecipe.set({ sour: result[i].flavors.sour }); } catch(e) {anotherRecipe.set({sour : "?"});}
+          try { anotherRecipe.set({ sweet: result[i].flavors.sweet }); } catch(e) {anotherRecipe.set({sweet : "?"});}
+          try { anotherRecipe.set({ bitter: result[i].flavors.bitter }); } catch(e) {anotherRecipe.set({bitter : "?"});}
+
+	  searchTemp.add(anotherRecipe);    //adds the model to the temporary     
 	});
       }  //eventually, should add something that checks for an empty search result, appending some warning if that happens
-    });
-		
-	
-    
+    });  
   }  
 });
 
-var Todos = new TodoList;	//I am afraid to move this
 
+var SavedList = Backbone.Collection.extend({
+    model: Todo,
+    localStorage: new Backbone.LocalStorage("recilist-backbone"),
+
+    initialize: function() {
+        this.bind( 'add', this.saveModel, this );
+    },
+
+    taggedForList: function() {
+      return this.where({taggedForList: true});
+    },
+    remaining: function() {
+      return this.without.apply(this, this.taggedForList);
+    },
+    nextOrder: function() {
+      if (!this.length) return 1;
+      return this.last().get('order') + 1;
+    },
+    comparator: 'order',
+      
+    saveModel: function(model, collection, options) {
+        console.log(model);
+        model.save();
+        //doesnt Want to save, not sure why
+    },
+  /*
+  returnAll: function() {
+    return this.models
+  }
+  */
+});
+
+var Todos = new TodoList;	//I am afraid to move this, 95% sure its obsolete, though
+
+var savedRecipesView = Backbone.View.extend({
+    tagName:  "li",
+    initialize: function(){
+        this.render();
+        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'destroy', this.remove);
+    },
+    render: function(){
+        var template = _.template( $("#list_item").html(), {} );
+        this.$el.html( template );
+        /*
+        this.$el.html(this.template(this.model.toJSON()));
+        this.$el.toggleClass('done', this.model.get('done'));
+        this.input = this.$('.edit');
+        return this;
+        */
+    },
+    events: {
+        "click input[type=button]": "sendToGroceries"
+    },
+
+    sendToGroceries: function( event ){
+        //send it to a grocery list collection
+    }
+});
+
+/*
 var TodoView = Backbone.View.extend({
     
     //Honestly, I dont think this is even remotely needed, I'm just afraid to delete it
@@ -134,22 +179,19 @@ var TodoView = Backbone.View.extend({
       this.input = this.$('.edit');
       return this;
     },
-
     // Toggle the `"done"` state of the model.
-    //NOT NEEDED
+    //---NOT NEEDED
     toggleDone: function() {
       this.model.toggle();
     },
-
     // Switch this view into `"editing"` mode, displaying the input field.
     //---NOT NEEDED
     edit: function() {
       this.$el.addClass("editing");
       this.input.focus();
     },
-
     // Close the `"editing"` mode, saving changes to the todo.
-    //----NOT NEEDED
+    //---NOT NEEDED
     close: function() {
       var value = this.input.val();
  
@@ -168,16 +210,16 @@ var TodoView = Backbone.View.extend({
       if (e.keyCode == 13) this.close();
     },
 
-    // Remove the item, destroy the model.
+    // Remove the item, destroy the model
     clear: function() {
       this.model.destroy();
     }
 });
-
+*/
 
 window.HomeView = Backbone.View.extend({
     template:_.template($('#home').html()),
-
+    
     render:function (eventName) {
         $(this.el).html(this.template());
         return this;
@@ -187,17 +229,17 @@ window.HomeView = Backbone.View.extend({
 window.newSearchView = Backbone.View.extend({
     template:_.template($('#newSearch').html()),
     
+    initialize: function() {
+        //this.searchTemp.bind('add', this.addOne(model), this);         
+    },
+    render:function (eventName) {
+        $(this.el).html(this.template());
+        return this;
+    },
     events: {
       "keypress #recipe-search":  "searchOnEnter",
       //add a listener to newSearch to change what's displaye don this list
     },
-    
-    render:function (eventName) {
-      //template:_.template($('#recipeListItem').html()),
-      $(this.el).html(this.template());
-      return this;
-    },
-    
     searchOnEnter: function(e) {   //the search bar's functionality
       if (e.keyCode != 13) return;
       var searchin = $("input[id='recipe-search']").val();
@@ -206,50 +248,89 @@ window.newSearchView = Backbone.View.extend({
       //this function is in todoList, does an API call and
       //adds a new model for each result (there will almost always be 5 results)
       searchTemp.findRecipes(searchin);
+    },
+    addOne: function(todo) {
+      var view = new TodoView({model: todo});
+      this.$("#todo-list").append(view.render().el);
     }
 });
 
-
-
 window.newListView = Backbone.View.extend({
-    template:_.template($('#newList').html()),
-
+    template : _.template($('#newList').html()),
+    initialize: function() {
+    },
+    render:function (eventName) {
+        var variables = {
+            recipe_name : this.model.get("title"),
+            img_url : this.model.get("imgUrl"),
+            ingrs : this.model.get("ingrs"),
+            rating : this.model.get("rating"),
+            salty : this.model.get("salty"),
+            sour : this.model.get("sour"),
+            sweet : this.model.get("sweet"),
+            bitter : this.model.get("bitter")
+        };
+        $(this.el).html(this.template(variables));
+        return this;
+    },
     events: {
       "click #save-this":  "saveModel"
     },
-    
-    render:function (eventName) {
-	$(this.el).html(this.template());
-        return this;
-    },
-    
     saveModel: function() {
 	console.log("saveModel() called");
-	
-	
+	//console.log(permStorage.taggedForList());
+        //shift the model over to permStorage
+        permStorage.add(this.model);
+        
+        console.log("current state of permStorage: ");
+        console.log(permStorage.models);
     }
 });
 
 window.savedRecipesView = Backbone.View.extend({
+    //collection: Backbone.Collection.extend(),
+    //so this isnt really associated with any particular collection- how do we fix that?
     template:_.template($('#savedRecipes').html()),
-    //this should fetch all recipes from permanent collection
-    //(local storage) and display them here - maybe assist this with
-    //a 'return all' function in permStorage?
-    
-    render:function (eventName) {
+    initialize: function() {
+        _.bindAll(this, 'render', 'addOne');
+        //this.collection.bind('add', this.addOne);
+        //this.collection.bind('reset', this.render);
+        permStorage.bind('add', this.addOne);
+        permStorage.bind('reset', this.render);
+        console.log(permStorage);
+    },
+    render:function (data) {    
         $(this.el).html(this.template());
+        _.each(data, function(task) {
+            console.log("meow");
+            this.addOne(task);
+        }, this);
+        return this;
+    },
+    addOne: function(task) {
+        var view = new listItemView({ model:task });
+        $(this.el).append( view.render().el );
+    }
+});
+
+window.listItemView = Backbone.View.extend({
+    tagName: 'li',
+    template:_.template($('#list-item').html()),
+    initialize: function() {
+        _.bindAll(this, 'render');
+        this.model.bind('change', this.render);
+        this.model.view = this;
+    },
+    render: function() {
+        console.log("meow meow meow");
+        $(this.el).html(this.template(this.model.toJSON()));
+        this.setContent();
         return this;
     }
 });
 
 window.oldListView = Backbone.View.extend({
-    //very similar to newListView, only difference is that
-    //well first obviously it will be reached through #savedRecipes
-    //and second, instead of having a "save" button at the bottom,
-    //it will have a "show instructions" button that will
-    //follow a link to the recipe instructions provided by API
     template:_.template($('#oldList').html()), 
-    
     render: function (eventName) {
         $(this.el).html(this.template());
         return this;
@@ -257,9 +338,7 @@ window.oldListView = Backbone.View.extend({
 });    
    
 window.deleteOldView =  Backbone.View.extend({
-    
     template:_.template($('#deleteOld').html()), 
-    
     render: function (eventName) {
         $(this.el).html(this.template());
         return this;
@@ -289,19 +368,13 @@ var AppRouter = Backbone.Router.extend({
     newSearch:function () {
         this.changePage(new newSearchView());
     },
-    newList:function (id) {
-        this.changePage(new newListView());
-	console.log("now going to try to populate a list of recipes for "+id);
-    
-	var tempModel = searchTemp.get(id); //makes an instance of the model, using the ID to find it
-	var theIngrs = new Array();
-	var theIngrs = tempModel.get("ingrs"); //pulls the ingredients out of the model
-	
-	//appends each ingredient to page as a list element
-	$.each(theIngrs, function(i, item) { 
-	  $("#ingr-list").append("<li data-role='listview' class='ui-li ui-li-static ui-btn-right-c'>" + theIngrs[i] + "</li>");  
-	}); 
-	
+    newList:function (theID) {
+        var tempModel = searchTemp.get(theID);
+        this.changePage(new newListView({
+            model: tempModel,
+            id: theID
+        }));
+        //console.log(permStorage.taggedForList());
     },
     savedRecipes:function () {  
         this.changePage(new savedRecipesView());      
@@ -333,5 +406,5 @@ $(document).ready(function () {
     app = new AppRouter();
     Backbone.history.start();
     searchTemp = new TodoList(); //this stores searched recipes
-    permStorage = new TodoList();
+    permStorage = new SavedList();
 });

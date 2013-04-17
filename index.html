@@ -16,15 +16,11 @@
             <p>Welcome to Recilist!</p>
             <p>This is the Home page. </p>
             
-            <p>Navigate to:</p>
             <ul data-role="listview"  data-inset="true">
                 <li><a href="#newSearch">Search for new Recipes</a></li>
                 <li><a href="#savedRecipes">View saved Recipes</a></li>
             </ul>
             
-            <p>alternate way to display the navigation:</p>
-            <a href="#newSearch" data-role="button" data-icon="arrow-r">Search for new Recipes</a>
-            <a href="#savedRecipes" data-role="button" data-icon="arrow-r">View saved Recipes</a>
         </div>
         
         <div data-role="footer" class="ui-bar">
@@ -52,15 +48,31 @@
         
     <script type="text/template" id="newList">
         <div data-role="header">
-            <h1>recipe name goes here...eventually</h1>
+            <h1> <%=recipe_name%> </h1>
         </div>
 
         <div data-role="content">
-            <p>Ingredients:</p>
+          <img src= <%=img_url%> >
+          <h4>Recipe Rating: <%= rating %> </h4>
+          <h4>Flavor Ratings</h4>
+          <div class="ui-block-a"> <div class="ui-bar ui-bar-e"> <h4>saltiness</h4> <%= salty %> </div> </div>
+          <div class="ui-block-b"> <div class="ui-bar ui-bar-e"> <h4>sourness</h4> <%= sour %> </div> </div>
+          <div class="ui-block-c"> <div class="ui-bar ui-bar-e"> <h4>sweetness</h4> <%= sweet %> </div> </div>
+          <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= bitter %> </div> </div>            
+        </div>
+            
+        <div data-role="collapsible" data-collapsed="true">
+          <h3>Ingredients</h3>
             <ul id="ingr-list" data-role="listview" data-inset="true">
-
+              <% for(var i in ingrs) { %>
+                <li><%= ingrs[i] %></li>
+              <% } %>
             </ul>
-            <input type="button" id="save-this" data-icon="check">
+        </div>
+            
+        
+        <div data-role="content">
+          <input type="button" id="save-this" data-icon="check" value="save to My Recipies">
         </div>
         
         <div data-role="footer" class="ui-bar">
@@ -136,8 +148,10 @@
         </div>
     </script>
     
-    
-
+    <script type="text/template" id="list-item">
+      <li>cheese</li>
+    </script>
+  <!--      <li> <img src= <%=img_url%> > <a href="#newList/"+ <%=model_id%> +"' class='ui-link-inherit'>" + <%=model_title%> + "</a> </li> -->
     
     
     <!-- The Scripts -->
@@ -145,10 +159,10 @@
     <script src="js/jqm-config.js"></script>
     <script src="lib/jquery.mobile-1.0.1.min.js"></script>
     <script src="js/underscore.js"></script>
-    <script src="lib/backbone-min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="lib/backbone-min.js"></script>    
     <script src="js/backbone.localStorage.js"</script>
     <script src="js/json2.js"></script>
+    <script src="js/main.js"></script>
 </head>
 
 <body></body>
