@@ -108,8 +108,8 @@ var SavedList = Backbone.Collection.extend({
       
     saveModel: function(model, collection, options) {
         console.log(model);
-        model.save();
-        //doesnt Want to save, not sure why
+        //model.save();
+        //doesnt end up saving, it tries to get saved under tempSearch
     },
   /*
   returnAll: function() {
@@ -118,16 +118,37 @@ var SavedList = Backbone.Collection.extend({
   */
 });
 
+var ShopItem = Backbone.Model.extend({
+    defaults: function() {
+        return {
+            ingr : 'ingredient',
+            done : false
+        }
+    },
+    toggle: function() {
+      this.save({taggedForList: !this.get("taggedForList")}); 
+    }
+});
+
+var ShopList = Backbone.Collection.extend({
+    localStorage: new Backbone.LocalStorage("grocery-list"),
+    getList: function() {
+        var list = new Array();
+        list = this.toJSON();
+        return list;
+    }
+});
+    
 var Todos = new TodoList;	//I am afraid to move this, 95% sure its obsolete, though
 
 var savedRecipesView = Backbone.View.extend({
     tagName:  "li",
-    initialize: function(){
+    initialize: function() {
         this.render();
         this.listenTo(this.model, 'change', this.render);
         this.listenTo(this.model, 'destroy', this.remove);
     },
-    render: function(){
+    render: function() {
         var template = _.template( $("#list_item").html(), {} );
         this.$el.html( template );
         /*
@@ -140,9 +161,15 @@ var savedRecipesView = Backbone.View.extend({
     events: {
         "click input[type=button]": "sendToGroceries"
     },
-
-    sendToGroceries: function( event ){
-        //send it to a grocery list collection
+    sendToGroceries: function() {
+        var temp = new Array();
+        temp = this.toJSON();
+        $.each(temp, function(i, item) {
+            var shopItem = new ShopItem();    
+            shopItem.set({ name: temp[i].title });
+            shoppingList.add(shopItem);
+            shopItem.save();
+        });    
     }
 });
 
@@ -281,7 +308,8 @@ window.newListView = Backbone.View.extend({
 	//console.log(permStorage.taggedForList());
         //shift the model over to permStorage
         permStorage.add(this.model);
-        
+        //searchTemp.remove(this.model);
+        //permStorage.save();
         console.log("current state of permStorage: ");
         console.log(permStorage.models);
     }
@@ -385,7 +413,6 @@ var AppRouter = Backbone.Router.extend({
     deleteOld:function () {
         this.changePage(new deleteOldView());
     },
-
     changePage:function (page) {
         $(page.el).attr('data-role', 'page');
         page.render();
