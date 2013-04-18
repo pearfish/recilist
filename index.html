@@ -36,7 +36,9 @@
         <div data-role="content">
             <input name= "recipe-search" id="recipe-search" data-icon="search" type="text" placeholder="What do you want to cook?">
             <ul id="search-list" data-role="listview" data-inset="true">
-               
+              <% for(var i in results) { %>
+                <li> <img src="<%= results[i].imgUrl %>"> <a href="#newList/<%= results[i].id%>"><%= results[i].title %> </a> </li>
+              <% } %> 
             </ul>
         </div>
     

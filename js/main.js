@@ -48,7 +48,6 @@ var TodoList = Backbone.Collection.extend({
     return this.last().get('order') + 1;
   },
   comparator: 'order',
-  
   findRecipes: function(theQuery) {
     console.log("findRecipes called");
     searchTemp.reset(); //deletes the any old search results, they're not needed
@@ -81,7 +80,8 @@ var TodoList = Backbone.Collection.extend({
 	  searchTemp.add(anotherRecipe);    //adds the model to the temporary     
 	});
       }  //eventually, should add something that checks for an empty search result, appending some warning if that happens
-    });  
+    });
+    console.log("search done");
   }  
 });
 
@@ -255,11 +255,19 @@ window.HomeView = Backbone.View.extend({
 
 window.newSearchView = Backbone.View.extend({
     template:_.template($('#newSearch').html()),
-    
+    //this VAGUELY works, but causes visual chaos the first run through
     initialize: function() {
-        //this.searchTemp.bind('add', this.addOne(model), this);         
+        console.log(searchTemp);
+        searchTemp.bind('searchDone', this.render, this);
+        
     },
     render:function (eventName) {
+        var temp = new Array();
+        results = searchTemp.toJSON();
+        console.log(results);
+        var variables = {
+            recipes: results
+        };
         $(this.el).html(this.template());
         return this;
     },
