@@ -14,11 +14,6 @@ var Todo = Backbone.Model.extend({
         sweet: 0,
         bitter: 0,	
         taggedForList: false
-        //this was changed
-        /* things to add to model -
-         * spiciness etc
-         * the link to the recipe instructions
-         */
       };
     },		
     initialize: function(){
@@ -38,7 +33,6 @@ var TodoList = Backbone.Collection.extend({
   initialize: function() {
     this.bind('add', this.onModelAdded, this );
   },
-  
   onModelAdded: function(model, collection, options) {
     //this does the appending to the search list, called in findRecipes()
     $("#search-list").append("<li> <img src="+model.get("imgUrl")+"> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
@@ -54,11 +48,10 @@ var TodoList = Backbone.Collection.extend({
     $.ajax({
       url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
       dataType: 'jsonp',
-
       success: function(apiStuff){
 	var result = new Array();     
 	result = apiStuff;          //saves the API's response as a new array
-	result = result.matches;    //trims extra information from the json object, now only has information on the various recipes
+        result = result.matches;    //trims extra information from the json object, now only has information on the various recipes
 	  
 	$.each(result, function(i, item) {
 	  var anotherRecipe= new Todo();    // makes a new model for each result
@@ -88,12 +81,11 @@ var TodoList = Backbone.Collection.extend({
 
 var SavedList = Backbone.Collection.extend({
     model: Todo,
-    localStorage: new Backbone.LocalStorage("recilist-backbone"),
+    localStorage: new Backbone.LocalStorage("permStorage"),
 
     initialize: function() {
         this.bind( 'add', this.saveModel, this );
     },
-
     taggedForList: function() {
       return this.where({taggedForList: true});
     },
@@ -104,9 +96,9 @@ var SavedList = Backbone.Collection.extend({
       if (!this.length) return 1;
       return this.last().get('order') + 1;
     },
-    comparator: 'order',
-      
+    comparator: 'order',  
     saveModel: function(model, collection, options) {
+        //permStorage.add(this.model);
         console.log(model);
         //model.save();
         //doesnt end up saving, it tries to get saved under tempSearch
@@ -175,14 +167,9 @@ var savedRecipesView = Backbone.View.extend({
 
 /*
 var TodoView = Backbone.View.extend({
-    
-    //Honestly, I dont think this is even remotely needed, I'm just afraid to delete it
-
     tagName:  "li",
-
     // Cache the template function for a single item.
     template: _.template($('#newSearch').html()),
-
     // The DOM events specific to an item.
     events: {
       "click .toggle"   : "toggleDone",
@@ -191,14 +178,10 @@ var TodoView = Backbone.View.extend({
       "keypress .edit"  : "updateOnEnter",
       "blur .edit"      : "close"
     },
-
-    //do we really care about this?  it cant be changed unless you switch to a differnt
-    //page, and it will re-render  when you change back
     initialize: function() {
       this.listenTo(this.model, 'change', this.render);
       this.listenTo(this.model, 'destroy', this.remove);
     },
-
     // Re-render the titles of the todo item.
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
@@ -221,7 +204,6 @@ var TodoView = Backbone.View.extend({
     //---NOT NEEDED
     close: function() {
       var value = this.input.val();
- 
       if (!value) {
         this.clear();
       } else {
@@ -229,21 +211,17 @@ var TodoView = Backbone.View.extend({
         this.$el.removeClass("editing");
       }
     },
-
     // If you hit `enter`, we're through editing the item.
-    
     //---NOT NEEDED
     updateOnEnter: function(e) {
       if (e.keyCode == 13) this.close();
     },
-
     // Remove the item, destroy the model
     clear: function() {
       this.model.destroy();
     }
 });
 */
-
 window.HomeView = Backbone.View.extend({
     template:_.template($('#home').html()),
     
@@ -255,7 +233,8 @@ window.HomeView = Backbone.View.extend({
 
 window.newSearchView = Backbone.View.extend({
     template:_.template($('#newSearch').html()),
-    //this VAGUELY works, but causes visual chaos the first run through
+    //this VAGUELY works, but causes visual chaos the first run through,
+    //still relies on the appending for that
     initialize: function() {
         console.log(searchTemp);
         searchTemp.bind('searchDone', this.render, this);
@@ -283,10 +262,6 @@ window.newSearchView = Backbone.View.extend({
       //this function is in todoList, does an API call and
       //adds a new model for each result (there will almost always be 5 results)
       searchTemp.findRecipes(searchin);
-    },
-    addOne: function(todo) {
-      var view = new TodoView({model: todo});
-      this.$("#todo-list").append(view.render().el);
     }
 });
 
@@ -298,6 +273,7 @@ window.newListView = Backbone.View.extend({
         var variables = {
             recipe_name : this.model.get("title"),
             img_url : this.model.get("imgUrl"),
+            timetomake: this.model.get("timeToMake"),
             ingrs : this.model.get("ingrs"),
             rating : this.model.get("rating"),
             salty : this.model.get("salty"),
@@ -315,7 +291,7 @@ window.newListView = Backbone.View.extend({
 	console.log("saveModel() called");
 	//console.log(permStorage.taggedForList());
         //shift the model over to permStorage
-        permStorage.add(this.model);
+        //permStorage.add(this.model);
         //searchTemp.remove(this.model);
         //permStorage.save();
         console.log("current state of permStorage: ");
@@ -357,11 +333,19 @@ window.listItemView = Backbone.View.extend({
         this.model.bind('change', this.render);
         this.model.view = this;
     },
+    events: {
+        "click input[type=button]" : "onClick"
+    },
     render: function() {
         console.log("meow meow meow");
         $(this.el).html(this.template(this.model.toJSON()));
         this.setContent();
         return this;
+    },
+    onClick: function(){
+        permStorage.add(this.model);
+        console.log("model added to permStorage, current state of permStorage:");
+        console.log(permStorage);
     }
 });
 
