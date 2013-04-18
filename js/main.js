@@ -1,5 +1,3 @@
-//add a total ingredient view- like an overall shopping list
-
 var Todo = Backbone.Model.extend({
     defaults: function() {
       return {
@@ -8,7 +6,7 @@ var Todo = Backbone.Model.extend({
 	imgUrl: 'defaultimageurl',
         order: permStorage.nextOrder(),
         rating: 0,
-        timeToMake: 0,
+        timeToMake: '',
         salty: 0,
         sour: 0,
         sweet: 0,
@@ -20,10 +18,6 @@ var Todo = Backbone.Model.extend({
       if( !this.get('ingrs') ){ 
         this.set({ingrs: new Array()});
       }
-    },
-    //altered, now this indicates whether
-    toggle: function() {
-      this.save({taggedForList: !this.get("taggedForList")}); 
     }
 });
 
@@ -31,11 +25,6 @@ var TodoList = Backbone.Collection.extend({
   model: Todo,
   //localStorage: new Backbone.LocalStorage("recilist-temp"),
   initialize: function() {
-    this.bind('add', this.onModelAdded, this );
-  },
-  onModelAdded: function(model, collection, options) {
-    //this does the appending to the search list, called in findRecipes()
-    $("#search-list").append("<li> <img src="+model.get("imgUrl")+"> <a href='#newList/"+model.get("id")+"' class='ui-link-inherit'>" + model.get("title") + "</a> </li>");
   },
   nextOrder: function() {
     if (!this.length) return 1;
@@ -78,7 +67,6 @@ var TodoList = Backbone.Collection.extend({
   }  
 });
 
-
 var SavedList = Backbone.Collection.extend({
     model: Todo,
     localStorage: new Backbone.LocalStorage("permStorage"),
@@ -98,11 +86,14 @@ var SavedList = Backbone.Collection.extend({
     },
     comparator: 'order',  
     saveModel: function(model, collection, options) {
-        //permStorage.add(this.model);
-        console.log(model);
         //model.save();
         //doesnt end up saving, it tries to get saved under tempSearch
     },
+    /*
+    save: function() {
+        localStorage.setItem(this.model.id, JSON.stringify(this.model.data));
+    }
+    */
   /*
   returnAll: function() {
     return this.models
@@ -165,63 +156,6 @@ var savedRecipesView = Backbone.View.extend({
     }
 });
 
-/*
-var TodoView = Backbone.View.extend({
-    tagName:  "li",
-    // Cache the template function for a single item.
-    template: _.template($('#newSearch').html()),
-    // The DOM events specific to an item.
-    events: {
-      "click .toggle"   : "toggleDone",
-      "dblclick .view"  : "edit",
-      "click a.destroy" : "clear",
-      "keypress .edit"  : "updateOnEnter",
-      "blur .edit"      : "close"
-    },
-    initialize: function() {
-      this.listenTo(this.model, 'change', this.render);
-      this.listenTo(this.model, 'destroy', this.remove);
-    },
-    // Re-render the titles of the todo item.
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-      this.$el.toggleClass('done', this.model.get('done'));
-      this.input = this.$('.edit');
-      return this;
-    },
-    // Toggle the `"done"` state of the model.
-    //---NOT NEEDED
-    toggleDone: function() {
-      this.model.toggle();
-    },
-    // Switch this view into `"editing"` mode, displaying the input field.
-    //---NOT NEEDED
-    edit: function() {
-      this.$el.addClass("editing");
-      this.input.focus();
-    },
-    // Close the `"editing"` mode, saving changes to the todo.
-    //---NOT NEEDED
-    close: function() {
-      var value = this.input.val();
-      if (!value) {
-        this.clear();
-      } else {
-        this.model.save({title: value});
-        this.$el.removeClass("editing");
-      }
-    },
-    // If you hit `enter`, we're through editing the item.
-    //---NOT NEEDED
-    updateOnEnter: function(e) {
-      if (e.keyCode == 13) this.close();
-    },
-    // Remove the item, destroy the model
-    clear: function() {
-      this.model.destroy();
-    }
-});
-*/
 window.HomeView = Backbone.View.extend({
     template:_.template($('#home').html()),
     
@@ -237,11 +171,11 @@ window.newSearchView = Backbone.View.extend({
     //still relies on the appending for that
     initialize: function() {
         console.log(searchTemp);
-        searchTemp.bind('searchDone', this.render, this);
-        
+        //searchTemp.bind('searchDone', this.render, this);
+        searchTemp.bind('add', this.render, this);
     },
     render:function (eventName) {
-        var temp = new Array();
+        var temp = new Array();  // I think this line isnt doing anyting
         results = searchTemp.toJSON();
         console.log(results);
         var variables = {
@@ -270,7 +204,8 @@ window.newListView = Backbone.View.extend({
     initialize: function() {
     },
     render:function (eventName) {
-        var variables = {
+        recipe = this.model.toJSON(); ///INCOMPLETE, modify newlist to accept straight from JSON
+	var variables = {
             recipe_name : this.model.get("title"),
             img_url : this.model.get("imgUrl"),
             timetomake: this.model.get("timeToMake"),
@@ -291,11 +226,16 @@ window.newListView = Backbone.View.extend({
 	console.log("saveModel() called");
 	//console.log(permStorage.taggedForList());
         //shift the model over to permStorage
-        //permStorage.add(this.model);
         //searchTemp.remove(this.model);
-        //permStorage.save();
+        console.log(this.model);
+        var tempModel= new Todo();
+        tempModel=this.model;
+        permStorage.add(tempModel);
         console.log("current state of permStorage: ");
         console.log(permStorage.models);
+        //now save permStorage to local storage
+        permStorage.each(function (recipe) { recipe.save(); });
+        
     }
 });
 
@@ -337,7 +277,6 @@ window.listItemView = Backbone.View.extend({
         "click input[type=button]" : "onClick"
     },
     render: function() {
-        console.log("meow meow meow");
         $(this.el).html(this.template(this.model.toJSON()));
         this.setContent();
         return this;
