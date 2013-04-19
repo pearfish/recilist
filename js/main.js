@@ -4,26 +4,31 @@ var Todo = Backbone.Model.extend({
 	id: 0,
 	title: 'defaultname',
 	imgUrl: 'defaultimageurl',
-        order: permStorage.nextOrder(),
+        order: searchTemp.nextOrder(),
         rating: 0,
         timeToMake: '',
         salty: 0,
         sour: 0,
         sweet: 0,
         bitter: 0,	
-        taggedForList: false
+        isPerm: false,
+	taggedForList: false
       };
     },		
     initialize: function(){
       if( !this.get('ingrs') ){ 
         this.set({ingrs: new Array()});
       }
+    },
+    saveModel: function() {
+	this.set({isPerm: true});
+	this.save();
     }
 });
 
 var TodoList = Backbone.Collection.extend({
   model: Todo,
-  localStorage: new Backbone.LocalStorage("permStorage"),
+  localStorage: new Backbone.LocalStorage("searchTemp"),
   initialize: function() {
   },
   nextOrder: function() {
@@ -31,9 +36,29 @@ var TodoList = Backbone.Collection.extend({
     return this.last().get('order') + 1;
   },
   comparator: 'order',
+  taggedForList: function() {
+      return this.where({taggedForList: true});
+  },
+  remaining: function() {
+      return this.without.apply(this, this.taggedForList);
+  },
+  
+  /*
+  searchTemp.each(function (model) {
+	    if(model.isPerm) {
+		model.save();
+	    }
+	});
+  */
+  
+  
   findRecipes: function(theQuery) {
     console.log("findRecipes called");
-    searchTemp.reset(); //deletes the any old search results, they're not needed
+    searchTemp.each(function (model) {
+	if (!model.isPerm) {
+	    model.destroy();
+	}
+    });
     $.ajax({
       url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
       dataType: 'jsonp',
@@ -67,45 +92,6 @@ var TodoList = Backbone.Collection.extend({
   }  
 });
 
-var SavedList = Backbone.Collection.extend({
-    model: Todo,
-
-    /* HERES YOU ERROR, YOU NEED NOT CALL LOCAL STORAGE HERE. IT IS ALREADY CALLED IN THE 'TODOLIST' COLLECTION WHICH IN TURN AUTOMATICALLY
-       MAKE ALL MODELS THAT REFERENCE IT, INHERIT FROM IT & SINCE WE'RE USING THE TODO MODEL HERE IT'S ALREADY INHEREITED !! :) 
-
-    */
-
-    // localStorage: new Backbone.LocalStorage("permStorage"),
-
-    initialize: function() {
-        this.bind( 'add', this.saveModel, this );
-    },
-    taggedForList: function() {
-      return this.where({taggedForList: true});
-    },
-    remaining: function() {
-      return this.without.apply(this, this.taggedForList);
-    },
-    nextOrder: function() {
-      if (!this.length) return 1;
-      return this.last().get('order') + 1;
-    },
-    comparator: 'order',  
-    saveModel: function(model, collection, options) {
-        //model.save();
-        //doesnt end up saving, it tries to get saved under tempSearch
-    },
-    /*
-    save: function() {
-        localStorage.setItem(this.model.id, JSON.stringify(this.model.data));
-    }
-    */
-  /*
-  returnAll: function() {
-    return this.models
-  }
-  */
-});
 
 var ShopItem = Backbone.Model.extend({
     defaults: function() {
@@ -121,6 +107,15 @@ var ShopItem = Backbone.Model.extend({
 
 var ShopList = Backbone.Collection.extend({
     localStorage: new Backbone.LocalStorage("grocery-list"),
+    generate: function() {
+	console.log("SHOP LIST!  ASSSSSEMMMMBLLLLLLE!");
+	searchTemp.fetch();
+	var ingrList = searchTemp.pluck('ingrs');  //this returns an array of arrays
+	console.log(ingrList);
+	ingrList = _.union(ingrList); 	//this needs to get a series of arrays ( _.union(array1, array 2); )
+	console.log(ingrList);
+    },
+	
     getList: function() {
         var list = new Array();
         list = this.toJSON();
@@ -129,7 +124,7 @@ var ShopList = Backbone.Collection.extend({
 });
     
 var Todos = new TodoList;	//I am afraid to move this, 95% sure its obsolete, though
-
+/*
 var savedRecipesView = Backbone.View.extend({
     tagName:  "li",
     initialize: function() {
@@ -140,12 +135,12 @@ var savedRecipesView = Backbone.View.extend({
     render: function() {
         var template = _.template( $("#list_item").html(), {} );
         this.$el.html( template );
-        /*
-        this.$el.html(this.template(this.model.toJSON()));
-        this.$el.toggleClass('done', this.model.get('done'));
-        this.input = this.$('.edit');
-        return this;
-        */
+        
+        //this.$el.html(this.template(this.model.toJSON()));
+        //this.$el.toggleClass('done', this.model.get('done'));
+        //this.input = this.$('.edit');
+        //return this;
+        
     },
     events: {
         "click input[type=button]": "sendToGroceries"
@@ -156,12 +151,12 @@ var savedRecipesView = Backbone.View.extend({
         $.each(temp, function(i, item) {
             var shopItem = new ShopItem();    
             shopItem.set({ name: temp[i].title });
-            shoppingList.add(shopItem);
+            shoppingList.add(shopItem); //use pluck [ingrs]
             shopItem.save();
         });    
     }
 });
-
+*/
 window.HomeView = Backbone.View.extend({
     template:_.template($('#home').html()),
     
@@ -233,36 +228,37 @@ window.newListView = Backbone.View.extend({
 	//console.log(permStorage.taggedForList());
         //shift the model over to permStorage
         //searchTemp.remove(this.model);
-        console.log(this.model);
-        var tempModel= new Todo();
-        tempModel=this.model;
-        permStorage.add(tempModel);
-        console.log("current state of permStorage: ");
-         console.log(permStorage.models);
+        //console.log(this.model);
+        this.model.saveModel();
+	//console.log(this.model)
         //now save permStorage to local storage
-        permStorage.each(function (model) { model.save(); });
-        
+        searchTemp.each(function (model) {
+	    if(model.isPerm) {
+		model.save();
+	    }
+	});
     }
 });
 
 window.savedRecipesView = Backbone.View.extend({
-    //collection: Backbone.Collection.extend(),
-    //so this isnt really associated with any particular collection- how do we fix that?
     template:_.template($('#savedRecipes').html()),
     initialize: function() {
-        _.bindAll(this, 'render', 'addOne');
-        //this.collection.bind('add', this.addOne);
-        //this.collection.bind('reset', this.render);
-        permStorage.bind('add', this.addOne);
-        permStorage.bind('reset', this.render);
-        console.log(permStorage);
+	console.log("about to fetch from local storage...");
+	searchTemp.fetch();
+	console.log("...fetched!");
     },
     render:function (data) {    
-        $(this.el).html(this.template());
-        _.each(data, function(task) {
+        results = searchTemp.toJSON();
+	//results = results.models;
+	//console.log(results);
+        var variables = {
+            results: results
+        };
+	_.each(data, function(task) {
             console.log("meow");
             this.addOne(task);
         }, this);
+	$(this.el).html(this.template(variables));
         return this;
     },
     addOne: function(task) {
@@ -288,9 +284,9 @@ window.listItemView = Backbone.View.extend({
         return this;
     },
     onClick: function(){
-        permStorage.add(this.model);
-        console.log("model added to permStorage, current state of permStorage:");
-        console.log(permStorage);
+        searchTemp.add(this.model);
+        console.log("model added to searchTemp, current state of searchTemp:");
+        console.log(searchTemp);
     }
 });
 
@@ -308,7 +304,24 @@ window.deleteOldView =  Backbone.View.extend({
         $(this.el).html(this.template());
         return this;
     }
-}); 
+});
+
+window.shoppingListView = Backbone.View.extend({
+    template:_.template($('#shoppingList').html()),
+    initialize: function() {
+	shopList.generate();
+    },
+    
+    render: function (eventName) {
+	var variables = {
+	  
+	    
+	};
+	$(this.el).html(this.template(variables));
+	return this;
+    }
+
+});
     
 var AppRouter = Backbone.Router.extend({
     routes:{
@@ -317,7 +330,8 @@ var AppRouter = Backbone.Router.extend({
         "newList/:id":"newList",
         "savedRecipes":"savedRecipes",
         "oldList":"oldList",
-	"deleteOld":"deleteOld"
+	"deleteOld":"deleteOld",
+	"shoppingList":"shoppingList"
     },
     initialize:function () {
         // Handle back button throughout the application
@@ -350,6 +364,9 @@ var AppRouter = Backbone.Router.extend({
     deleteOld:function () {
         this.changePage(new deleteOldView());
     },
+    shoppingList:function () {
+	this.changePage(new shoppingListView());
+    },
     changePage:function (page) {
         $(page.el).attr('data-role', 'page');
         page.render();
@@ -369,6 +386,6 @@ $(document).ready(function () {
     console.log('document ready');
     app = new AppRouter();
     Backbone.history.start();
-    searchTemp = new TodoList(); //this stores searched recipes
-    permStorage = new SavedList();
+    searchTemp = new TodoList(); //this stores searched recipes, rename to myRecipes
+    shopList = new ShopList();
 });
