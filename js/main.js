@@ -62,6 +62,9 @@ var TodoList = Backbone.Collection.extend({
     $.ajax({
       url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
       dataType: 'jsonp',
+       complete:function(){
+            $('[data-role="listview"]').listview(); //re-active all listview
+        },
       success: function(apiStuff){
 	var result = new Array();     
 	result = apiStuff;          //saves the API's response as a new array
