@@ -7,12 +7,12 @@
 
     <!-- The Templates -->
     <script type="text/template" id="home">  
-         <div data-role="header"  >
+         <div data-role="header" data-theme="b" >
             <h1 style="color:black">Recilist Home</h1>
                 </div>
                  <img src="store.jpg" id="vege">
        
-        <div data-role="content" style="color:red">
+        <div data-role="content" style="color:black" data-theme="b">
             <!-- <h3>recilist home page</h3>
                  <p>Welcome to Recilist!</p>
                 <p>This is the Home page. </p>
@@ -24,39 +24,39 @@
 
             
             <ul data-role="listview" id="choices" data-inset="true">
-                <li><a style="color:red" href="#newSearch">Search for new Recipes</a></li>
-                <li><a style="color:red" href="#savedRecipes">View saved Recipes</a></li>
+                <li><a style="color:black" href="#newSearch">Search for new Recipes</a></li>
+                <li><a style="color:black" href="#savedRecipes">View saved Recipes</a></li>
             </ul>
             
         </div>
         
-        <div data-role="footer" class="ui-bar" id ="footer">
+        <div data-role="footer" class="ui-bar" id ="footer" data-theme="b">
             <h5 style="color:black"> powered by <img src="http://static.yummly.com/api-logo.png"> </h5>
         </div>
     </script>
 
     <script type="text/template" id="newSearch">  
-        <div data-role="header">
-            <h1 style="color:black">Search for a new Recipe</h1> 
+        <div data-role="header" data-theme="b">
+            <h1 style="color:black">Results List</h1> 
         </div>
 
         <div data-role="content">
             <input name= "recipe-search" id="recipe-search" data-icon="search" type="text" placeholder="What do you want to cook?">
-            <ul id="search-list" data-role="listview" data-inset="true">
+            <ul id="search-list" data-role="listview" data-inset="true" data-theme="a">
               <% for(var i in results) { %>
                 <li> <img src="<%= results[i].imgUrl %>"> <a href="#newList/<%= results[i].id%>"><%= results[i].title %> </a> </li>
               <% } %> 
             </ul>
         </div>
-        <img src="list.png" id="list">
-        <div data-role="footer" class="ui-bar">
+
+        <div data-role="footer" class="ui-bar" data-theme="b">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <a href="#" data-icon="home">Home</a>
         </div>
     </script>
         
     <script type="text/template" id="newList">
-        <div data-role="header">
+        <div data-role="header" data-theme="b">
             <h1 style="color:black"> <%=recipe_name%> </h1>
         </div>
 
@@ -72,7 +72,7 @@
           <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= bitter %> </div> </div>            
         </div>
             
-        <div data-role="collapsible" data-collapsed="true">
+        <div data-role="collapsible" data-collapsed="true" >
           <h3>Ingredients</h3>
             <ul id="ingr-list" data-role="listview" data-inset="true">
               <% for(var i in ingrs) { %>
@@ -88,7 +88,7 @@
            <img src="store3.jpg" id="aisle">
         </div>
         
-        <div data-role="footer" class="ui-bar">
+        <div data-role="footer" class="ui-bar" data-theme="b">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <a href="#" data-icon="home">Home</a>
         </div>
