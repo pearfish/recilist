@@ -55,28 +55,14 @@ var TodoList = Backbone.Collection.extend({
     console.log("collection restored, current state:");
   },
   extractIngrs: function() {
-    savedTemp=this.fetch();
-    console.log(savedTemp);
+    savedTemp=this.fetch(); //want to only get things saved to local storage
     var allIngrs = new Array(); 
-    var rawIngrs = savedTemp.pluck("ingrs");
-    console.log("raw array of array of the ingrs-");
-    console.log(rawIngrs);
+    var rawIngrs = searchTemp.pluck("ingrs");
     $.each(rawIngrs, function(i, item) {
         allIngrs = _.union(allIngrs, rawIngrs[i]);
     });
-    console.log("aggregated array of ingredients-"); //remove all the logs when its guarenteed to work
-    console.log(allIngrs);
     return allIngrs;
   },
-  /*
-  searchTemp.each(function (model) {
-	    if(model.isPerm) {
-		model.save();
-	    }
-	});
-  */
-  
-  
   findRecipes: function(theQuery) {
     console.log("findRecipes called");
     searchTemp.wipe();
@@ -116,8 +102,8 @@ var TodoList = Backbone.Collection.extend({
   }  
 });
 
-
 var ShopItem = Backbone.Model.extend({
+    idAttribute:"_id", 
     defaults: function() {
         return {
             ingr : 'ingredient',
@@ -125,25 +111,19 @@ var ShopItem = Backbone.Model.extend({
         }
     },
     toggle: function() {
-      this.save({taggedForList: !this.get("taggedForList")}); 
+      this.save({done: !this.get("done")}); 
     }
 });
 
 var ShopList = Backbone.Collection.extend({
     localStorage: new Backbone.LocalStorage("grocery-list"),
     generate: function() {
-	console.log("SHOP LIST!  ASSSSSEMMMMBLLLLLLE!");
-	searchTemp.fetch();
-	var ingrList = searchTemp.pluck('ingrs');  //this returns an array of arrays
-	console.log(ingrList);
-	ingrList = _.union(ingrList); 	//this needs to get a series of arrays ( _.union(array1, array 2); )
-	console.log(ingrList);
-    },
-	
-    getList: function() {
-        var list = new Array();
-        list = this.toJSON();
-        return list;
+	ingrs = searchTemp.extractIngrs();
+        $.each(ingrs, function(i, item) {
+            var aShopThing = new ShopItem;
+            aShopThing.set({ ingr : ingrs[i] });
+            shopList.add(aShopThing);
+        });
     }
 });
     
@@ -182,8 +162,7 @@ var savedRecipesView = Backbone.View.extend({
 });
 */
 window.HomeView = Backbone.View.extend({
-    template:_.template($('#home').html()),
-    
+    template:_.template($('#home').html()), 
     render:function (eventName) {
         $(this.el).html(this.template());
         return this;
@@ -192,18 +171,14 @@ window.HomeView = Backbone.View.extend({
 
 window.newSearchView = Backbone.View.extend({
     template:_.template($('#newSearch').html()),
-    //this VAGUELY works, but causes visual chaos the first run through,
-    //still relies on the appending for that
     initialize: function() {
         console.log(searchTemp);
-        //searchTemp.bind('searchDone', this.render, this);
         searchTemp.wipe();
         searchTemp.bind('add', this.render, this);
     },
     render:function (eventName) {
         var temp = new Array();  // I think this line isnt doing anyting
         results = searchTemp.toJSON();
-        // console.log(results);
         var variables = {
             recipes: results
         };
@@ -217,10 +192,6 @@ window.newSearchView = Backbone.View.extend({
     searchOnEnter: function(e) {   //the search bar's functionality
       if (e.keyCode != 13) return;
       var searchin = $("input[id='recipe-search']").val();
-      
-      console.log("searched for - "+ searchin);
-      //this function is in todoList, does an API call and
-      //adds a new model for each result (there will almost always be 5 results)
       searchTemp.findRecipes(searchin);
     }
 });
@@ -230,19 +201,8 @@ window.newListView = Backbone.View.extend({
     initialize: function() {
     },
     render:function (eventName) {
-        recipe = this.model.toJSON(); ///INCOMPLETE, modify newlist to accept straight from JSON
-	var variables = {
-            recipe_name : this.model.get("title"),
-            img_url : this.model.get("imgUrl"),
-            timetomake: this.model.get("timeToMake"),
-            ingrs : this.model.get("ingrs"),
-            rating : this.model.get("rating"),
-            salty : this.model.get("salty"),
-            sour : this.model.get("sour"),
-            sweet : this.model.get("sweet"),
-            bitter : this.model.get("bitter")
-        };
-        $(this.el).html(this.template(variables));
+        recipe = this.model.toJSON();
+        $(this.el).html(this.template());
         return this;
     },
     events: {
@@ -250,13 +210,7 @@ window.newListView = Backbone.View.extend({
     },
     saveModel: function() {
 	console.log("saveModel() called");
-	//console.log(permStorage.taggedForList());
-        //shift the model over to permStorage
-        //searchTemp.remove(this.model);
-        //console.log(this.model);
         this.model.saveModel();
-	//console.log(this.model)
-        //now save permStorage to local storage
         searchTemp.each(function (model) {
 	    if(model.isPerm) {
 		model.save();
@@ -268,30 +222,67 @@ window.newListView = Backbone.View.extend({
 window.savedRecipesView = Backbone.View.extend({
     template:_.template($('#savedRecipes').html()),
     initialize: function() {
-	console.log("about to fetch from local storage...");
 	searchTemp.fetch();
-	console.log("...fetched!");
     },
     render:function (data) {    
         results = searchTemp.toJSON();
-	//results = results.models;
-	//console.log(results);
         var variables = {
             results: results
         };
-	_.each(data, function(task) {
-            console.log("meow");
-            this.addOne(task);
-        }, this);
 	$(this.el).html(this.template(variables));
         return this;
-    },
-    addOne: function(task) {
-        var view = new listItemView({ model:task });
-        $(this.el).append( view.render().el );
     }
 });
 
+
+window.oldListView = Backbone.View.extend({
+    template:_.template($('#oldList').html()), 
+    initialize: function() {
+        //dont need to mess with searchTemp, it should be all set up by savedRecipesView    
+    },
+    render: function (data) {
+        recipe = this.model.toJSON();
+        $(this.el).html(this.template());
+        return this;
+        //$(this.el).html(this.template(variables));
+    },
+    events: {
+      "click #instructions":  "gotoInstructions"
+    },
+    gotoInstructions: function() {
+        //do this later
+    }
+});
+
+  
+window.deleteOldView =  Backbone.View.extend({
+    template:_.template($('#deleteOld').html()), 
+    render: function (eventName) {
+        $(this.el).html(this.template());
+        return this;
+    }
+});
+
+window.shoppingListView = Backbone.View.extend({
+    template:_.template($('#shoppingList').html()),
+    initialize: function() {
+	shopList.generate();
+        console.log(shopList);
+    },
+    render: function (eventName) {
+	var variables = {
+	  //in all honesty, I'm not really sure how the shop list is getting to the html
+	};
+	$(this.el).html(this.template(variables));
+	return this;
+    },
+    toggleThis: function() {
+        //this.toggle();    
+    }
+});
+
+
+/*
 window.listItemView = Backbone.View.extend({
     tagName: 'li',
     template:_.template($('#list-item').html()),
@@ -314,39 +305,7 @@ window.listItemView = Backbone.View.extend({
         console.log(searchTemp);
     }
 });
-
-window.oldListView = Backbone.View.extend({
-    template:_.template($('#oldList').html()), 
-    render: function (eventName) {
-        $(this.el).html(this.template());
-        return this;
-    }
-});    
-   
-window.deleteOldView =  Backbone.View.extend({
-    template:_.template($('#deleteOld').html()), 
-    render: function (eventName) {
-        $(this.el).html(this.template());
-        return this;
-    }
-});
-
-window.shoppingListView = Backbone.View.extend({
-    template:_.template($('#shoppingList').html()),
-    initialize: function() {
-	shopList.generate();
-    },
-    
-    render: function (eventName) {
-	var variables = {
-	  
-	    
-	};
-	$(this.el).html(this.template(variables));
-	return this;
-    }
-
-});
+*/ 
     
 var AppRouter = Backbone.Router.extend({
     routes:{
@@ -354,7 +313,7 @@ var AppRouter = Backbone.Router.extend({
         "newSearch":"newSearch",
         "newList/:id":"newList",
         "savedRecipes":"savedRecipes",
-        "oldList":"oldList",
+        "oldList/:id":"oldList",
 	"deleteOld":"deleteOld",
 	"shoppingList":"shoppingList"
     },
@@ -383,8 +342,13 @@ var AppRouter = Backbone.Router.extend({
     savedRecipes:function () {  
         this.changePage(new savedRecipesView());      
     },
-    oldList:function () {
-        this.changePage(new oldListView());
+    oldList:function (theID) {
+        //searchTemp.restore();
+        var tempModel = searchTemp.get(theID);
+        this.changePage(new oldListView({
+            model: tempModel,
+            id: theID    
+        }));
     },
     deleteOld:function () {
         this.changePage(new deleteOldView());

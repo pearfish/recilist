@@ -57,26 +57,25 @@
         
     <script type="text/template" id="newList">
         <div data-role="header" data-theme="b">
-            <h1 style="color:black"> <%=recipe_name%> </h1>
+            <h1 style="color:black"> <%=recipe.title%> </h1>
         </div>
 
         <div>
         <div data-role="content">
-          <img src= <%=img_url%> >
-          <h4>Recipe Rating: <%= rating %> </h4>
-          <h4>Total time to Prepare: <%= timetomake %> </h4>
+          <img src= <%= recipe.imgUrl %> >
+          <h4>Recipe Rating: <%= recipe.rating %> </h4>
           <h4>Flavor Ratings</h4>
-          <div class="ui-block-a"> <div class="ui-bar ui-bar-e"> <h4>saltiness</h4> <%= salty %> </div> </div>
-          <div class="ui-block-b"> <div class="ui-bar ui-bar-e"> <h4>sourness</h4> <%= sour %> </div> </div>
-          <div class="ui-block-c"> <div class="ui-bar ui-bar-e"> <h4>sweetness</h4> <%= sweet %> </div> </div>
-          <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= bitter %> </div> </div>            
+          <div class="ui-block-a"> <div class="ui-bar ui-bar-e"> <h4>saltiness</h4> <%= recipe.salty %> </div> </div>
+          <div class="ui-block-b"> <div class="ui-bar ui-bar-e"> <h4>sourness</h4> <%= recipe.sour %> </div> </div>
+          <div class="ui-block-c"> <div class="ui-bar ui-bar-e"> <h4>sweetness</h4> <%= recipe.sweet %> </div> </div>
+          <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= recipe.bitter %> </div> </div>            
         </div>
             
         <div data-role="collapsible" data-collapsed="true" >
           <h3>Ingredients</h3>
             <ul id="ingr-list" data-role="listview" data-inset="true">
-              <% for(var i in ingrs) { %>
-                <li><%= ingrs[i] %></li>
+              <% for(var i in recipe.ingrs) { %>
+                <li><%= recipe.ingrs[i] %></li>
               <% } %>
             </ul>
         </div>
@@ -104,7 +103,7 @@
             <p>Saved Recipes:</p>
             <ul id="search-list" data-role="listview" data-inset="true">
               <% for(var i in results) { %>
-                <li> <img src="<%= results[i].imgUrl %>"> <a href="#newList/<%= results[i].id%>"><%= results[i].title %> </a> </li>
+                <li> <img src="<%= results[i].imgUrl %>"> <a href="#oldList/<%= results[i].id%>"><%= results[i].title %> </a> </li>
               <% } %> 
             </ul>
            <a href="#deleteOld" data-role="button">manage saved recipes</a>
@@ -140,54 +139,62 @@
     
     
     <script type="text/template" id="oldList">
-      <div data-role="header">
-          <h1>---NAME OF THE RECIPE----</h1> 
+      <div data-role="header" data-theme="b">
+        <h1 style="color:black"> <%=recipe.title%> </h1>
       </div>
-
+        
+      <div>
+        <div data-role="content">
+          <img src= <%= recipe.imgUrl %> >
+          <h4>Recipe Rating: <%= recipe.rating %> </h4>
+          <h4>Flavor Ratings</h4>
+          <div class="ui-block-a"> <div class="ui-bar ui-bar-e"> <h4>saltiness</h4> <%= recipe.salty %> </div> </div>
+          <div class="ui-block-b"> <div class="ui-bar ui-bar-e"> <h4>sourness</h4> <%= recipe.sour %> </div> </div>
+          <div class="ui-block-c"> <div class="ui-bar ui-bar-e"> <h4>sweetness</h4> <%= recipe.sweet %> </div> </div>
+          <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= recipe.bitter %> </div> </div>            
+        </div>
+            
+      <div data-role="collapsible" data-collapsed="true" >
+        <h3>Ingredients</h3>
+        <ul id="ingr-list" data-role="listview" data-inset="true">
+          <% for(var i in recipe.ingrs) { %>
+            <li><%= recipe.ingrs[i] %></li>
+          <% } %>
+        </ul>
+      </div>
+        
       <div data-role="content">
-          <p>This is a list of all the ingredients in this recipe</p>
-          <p>Ingredients:</p>
-          <ul data-role="listview" data-inset="true">
-              <li>ingredient 1</li>
-              <li>ingredient 2</li>
-              <li>ingredient 3</li>
-              <li>ingredient 4</li>
-          </ul>
-          <p> (button to view the recipe) </p>
+        <input type="button" id="instructions" data-icon="check" value="view recipe instructions">
       </div>
-      
-      <div data-role="footer" class="ui-bar">
-          <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
-          <a href="#" data-icon="home">Home</a>
+        
+      <div data-role="footer" class="ui-bar" data-theme="b">
+        <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+        <a href="#" data-icon="home">Home</a>
       </div>
     </script>
     
     <script type="text/template" id="shoppingList">
       <div data-role="header">
-          <h1>shopping list</h1> 
+          <h1>Shopping List</h1> 
       </div>
       
       <div data-role="content">
-        <ul id="search-list" data-role="listview" data-inset="true">
+        <div data-role="fieldcontain">
           <% for(var i in results) { %>
-            <li> <input type="checkbox" name=i id=i class="custom" /></li>  <!-- these checkboxes are HIDEOUSLY DEFORMED-->
-            <label for=i> <%= results[i].title %> </label>
-          <% } %> 
-        </ul>
+            <fieldset data-role="controlgroup">
+              <input type="checkbox"  class="custom" />
+              <label for="checkbox-1"> <%= results[i].title %> </label>
+            </fieldset>
+          <% } %>
+        </div>
       </div>
+      
       
       <div data-role="footer" class="ui-bar">
           <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
-          <a href="#" data-icon="home">Home</a>
+          <a href="#"data-icon="home">Home</a>
       </div>      
     </script>
-    
-    
-    <script type="text/template" id="list-item">
-      <li>cheese</li>
-    </script>
-  <!--      <li> <img src= <%=img_url%> > <a href="#newList/"+ <%=model_id%> +"' class='ui-link-inherit'>" + <%=model_title%> + "</a> </li> -->
-    
     
     <!-- The Scripts -->
     <script src="lib/jquery-1.7.1.min.js"></script>
