@@ -37,12 +37,37 @@ var TodoList = Backbone.Collection.extend({
   },
   comparator: 'order',
   taggedForList: function() {
-      return this.where({taggedForList: true});
+    return this.where({taggedForList: true});
   },
   remaining: function() {
-      return this.without.apply(this, this.taggedForList);
+    return this.without.apply(this, this.taggedForList);
   },
   
+  //function to reset the collection
+  wipe: function() {
+    this.reset();  //admittedly, this doesnt really need to be a function, but its easy to track the logic this way
+    console.log("wipe() called, current state:");
+    console.log(this.models);
+  },
+  //
+  restore: function() {
+    this.reset(this.fetch());
+    console.log("collection restored, current state:");
+  },
+  extractIngrs: function() {
+    savedTemp=this.fetch();
+    console.log(savedTemp);
+    var allIngrs = new Array(); 
+    var rawIngrs = savedTemp.pluck("ingrs");
+    console.log("raw array of array of the ingrs-");
+    console.log(rawIngrs);
+    $.each(rawIngrs, function(i, item) {
+        allIngrs = _.union(allIngrs, rawIngrs[i]);
+    });
+    console.log("aggregated array of ingredients-"); //remove all the logs when its guarenteed to work
+    console.log(allIngrs);
+    return allIngrs;
+  },
   /*
   searchTemp.each(function (model) {
 	    if(model.isPerm) {
@@ -54,11 +79,7 @@ var TodoList = Backbone.Collection.extend({
   
   findRecipes: function(theQuery) {
     console.log("findRecipes called");
-    searchTemp.each(function (model) {
-	if (!model.isPerm) {
-	    model.destroy();
-	}
-    });
+    searchTemp.wipe();
     $.ajax({
       url: 'http://api.yummly.com/v1/api/recipes?_app_id=d8087d51&_app_key=005af5a16f1a8abf63660c2c784ab65f&maxResult=5&q='+theQuery,
       dataType: 'jsonp',
@@ -176,6 +197,7 @@ window.newSearchView = Backbone.View.extend({
     initialize: function() {
         console.log(searchTemp);
         //searchTemp.bind('searchDone', this.render, this);
+        searchTemp.wipe();
         searchTemp.bind('add', this.render, this);
     },
     render:function (eventName) {
