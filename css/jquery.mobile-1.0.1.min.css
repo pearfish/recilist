@@ -63,21 +63,14 @@ input,.ui-body-c select,.ui-body-c textarea,.ui-body-c button{font-family:Helvet
 
 #vege{
 	margin-top: 20px;
-	margin-left: 270px;
+	/*margin-left: 270px;*/
 	height: 200px;
-	width: 900;
+	width: 100%;
 }
 
 #aisle{
-	margin-left: 300px;
 	height: 200px;
-	width: 650px;
-}
-
-#list{
-	margin-bottom: 30px;
-	margin-left: 550px;
-	height: 350px;
+	width: 100%;
 }
 
 #footer{

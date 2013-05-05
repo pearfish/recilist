@@ -265,6 +265,7 @@ window.deleteOldView =  Backbone.View.extend({
 
 window.shoppingListView = Backbone.View.extend({
     template:_.template($('#shoppingList').html()),
+    
     initialize: function() {
 	shopList.generate();
         console.log(shopList);
@@ -282,31 +283,6 @@ window.shoppingListView = Backbone.View.extend({
 });
 
 
-/*
-window.listItemView = Backbone.View.extend({
-    tagName: 'li',
-    template:_.template($('#list-item').html()),
-    initialize: function() {
-        _.bindAll(this, 'render');
-        this.model.bind('change', this.render);
-        this.model.view = this;
-    },
-    events: {
-        "click input[type=button]" : "onClick"
-    },
-    render: function() {
-        $(this.el).html(this.template(this.model.toJSON()));
-        this.setContent();
-        return this;
-    },
-    onClick: function(){
-        searchTemp.add(this.model);
-        console.log("model added to searchTemp, current state of searchTemp:");
-        console.log(searchTemp);
-    }
-});
-*/ 
-    
 var AppRouter = Backbone.Router.extend({
     routes:{
         "":"home",

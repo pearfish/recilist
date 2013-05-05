@@ -71,7 +71,7 @@
           <div class="ui-block-d"> <div class="ui-bar ui-bar-e"> <h4>bitterness</h4> <%= recipe.bitter %> </div> </div>            
         </div>
             
-        <div data-role="collapsible" data-collapsed="true" >
+        <div data-role="content" data-collapsed="true" >
           <h3>Ingredients</h3>
             <ul id="ingr-list" data-role="listview" data-inset="true">
               <% for(var i in recipe.ingrs) { %>
@@ -94,7 +94,7 @@
     </script>
 
     <script type="text/template" id="savedRecipes">
-        <div data-role="header">
+        <div data-role="header" data-theme="b">
             <h1>My Recipes</h1>
         </div>
 
@@ -110,7 +110,7 @@
            <a href="#shoppingList" data-role="button">generate shopping list</a>
         </div>
         
-        <div data-role="footer" class="ui-bar">
+        <div data-role="footer" class="ui-bar" data-theme="b">
             <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
             <a href="#" data-icon="home">Home</a>
         </div>
@@ -174,23 +174,26 @@
     </script>
     
     <script type="text/template" id="shoppingList">
-      <div data-role="header">
+      <div data-role="header" data-theme="b">
           <h1>Shopping List</h1> 
       </div>
       
       <div data-role="content">
-        <div data-role="fieldcontain">
+        <div data-role="controlgroup">
           <% for(var i in results) { %>
-            <fieldset data-role="controlgroup">
-              <input type="checkbox"  class="custom" />
-              <label for="checkbox-1"> <%= results[i].title %> </label>
+             <h3> <%= results[i].title %> </h3>
+            <% for(var j in results[i].ingrs) { %>
+            <fieldset>
+              <input type="checkbox" name="checkbox-1" id="checkbox-1" class="custom" />
+              <label for="checkbox-1"> <%= results[i].ingrs[j] %> </label>
             </fieldset>
+          <% } %>
           <% } %>
         </div>
       </div>
       
       
-      <div data-role="footer" class="ui-bar">
+      <div data-role="footer" class="ui-bar" data-theme="b">
           <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
           <a href="#"data-icon="home">Home</a>
       </div>      
